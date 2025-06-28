@@ -1,0 +1,3370 @@
+/README.md
+
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+
+/app/globals.css
+
+@import "tailwindcss";
+
+:root {
+  --telegram-blue: #0088cc;
+}
+
+/* Support Telegram's theme variables */
+.light {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--tg-theme-secondary-bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--tg-theme-hint-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tg-theme-text-color);
+}
+
+/* Button styles */
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95;
+    background-color: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95;
+    background-color: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+  }
+}
+
+/* Animations */
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Prevent text selection in game UI */
+.game-ui {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Safe area handling */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+
+/app/layout.tsx
+
+// app/layout.tsx
+import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
+import Script from 'next/script'
+import './globals.css'
+import { TelegramProvider } from '@/providers/TelegramProvider'
+import { Analytics } from '@vercel/analytics/react'
+
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'Telegram Mini App Masterclass',
+  description: 'Learn to build amazing Telegram Mini App games',
+  formatDetection: { telephone: false },
+  robots: 'noindex,nofollow',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1.0,
+  minimumScale: 1.0,
+  maximumScale: 1.0,
+  userScalable: false,
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
+      </head>
+      <body className={inter.className}>
+        <TelegramProvider>
+          {children}
+        </TelegramProvider>
+        <Analytics />
+      </body>
+    </html>
+  )
+}
+
+
+/app/page.tsx
+
+// app/page.tsx
+'use client'
+
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { useTelegram } from '@/providers/TelegramProvider'
+import NavigationTabs from '@/components/NavigationTabs'
+import CoreApiDemo from '@/components/demos/CoreApiDemo'
+import ButtonsDemo from '@/components/demos/ButtonsDemo'
+import StorageDemo from '@/components/demos/StorageDemo'
+import HapticsDemo from '@/components/demos/HapticsDemo'
+import SensorsDemo from '@/components/demos/SensorsDemo'
+import BiometricsDemo from '@/components/demos/BiometricsDemo'
+import GameFeaturesDemo from '@/components/demos/GameFeaturesDemo'
+import PaymentsDemo from '@/components/demos/PaymentsDemo'
+import ActivityDemo from '@/components/demos/ActivityDemo'
+import DataCommDemo from '@/components/demos/DataCommDemo'
+import EmojiStatusDemo from '@/components/demos/EmojiStatusDemo'
+import FileOperationsDemo from '@/components/demos/FileOperationsDemo'
+import InitDataDemo from '@/components/demos/InitDataDemo'
+
+export default function Home() {
+  const { isReady, user } = useTelegram()
+  const [activeTab, setActiveTab] = useState('core')
+
+  if (!isReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 border-4 border-telegram-blue border-t-transparent rounded-full"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <main className="min-h-screen bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)]">
+      {/* Header */}
+      <header className="bg-[var(--tg-theme-header-bg-color)] p-4 shadow-md">
+        <h1 className="text-2xl font-bold text-center">
+          Telegram Mini App Masterclass
+        </h1>
+        {user && (
+          <p className="text-center text-sm text-[var(--tg-theme-hint-color)] mt-1">
+            Welcome, {user.first_name}!
+            {user.is_premium && ' ⭐ Premium'}
+          </p>
+        )}
+      </header>
+
+      {/* Navigation */}
+      <NavigationTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Content */}
+      <div className="p-4 pb-20">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {activeTab === 'init' && <InitDataDemo />}
+          {activeTab === 'core' && <CoreApiDemo />}
+          {activeTab === 'buttons' && <ButtonsDemo />}
+          {activeTab === 'storage' && <StorageDemo />}
+          {activeTab === 'haptics' && <HapticsDemo />}
+          {activeTab === 'sensors' && <SensorsDemo />}
+          {activeTab === 'biometrics' && <BiometricsDemo />}
+          {activeTab === 'game' && <GameFeaturesDemo />}
+          {activeTab === 'payments' && <PaymentsDemo />}
+          {activeTab === 'data' && <DataCommDemo />}
+          {activeTab === 'emoji' && <EmojiStatusDemo />}
+          {activeTab === 'files' && <FileOperationsDemo />}
+          {activeTab === 'activity' && <ActivityDemo />}
+        </motion.div>
+      </div>
+    </main>
+  )
+}
+
+
+/components/CodeBlock.tsx
+
+// components/CodeBlock.tsx
+interface CodeBlockProps {
+    children: string
+    language?: string
+}
+
+export default function CodeBlock({ children, language = 'typescript' }: CodeBlockProps) {
+    return (
+        <div className="relative">
+            <div className="absolute top-2 right-2 text-xs text-[var(--tg-theme-hint-color)]">
+                {language}
+            </div>
+            <pre className="bg-[var(--tg-theme-secondary-bg-color)] p-4 rounded-lg overflow-x-auto">
+                <code className="text-sm">{children.trim()}</code>
+            </pre>
+        </div>
+    )
+}
+
+
+/components/ColorPicker.tsx
+
+// components/ColorPicker.tsx
+import { useState } from 'react'
+
+interface ColorPickerProps {
+    label: string
+    value: string
+    presets: { label: string; value: string }[]
+    onChange: (color: string) => void
+}
+
+export default function ColorPicker({ label, value, presets, onChange }: ColorPickerProps) {
+    const [isCustom, setIsCustom] = useState(false)
+
+    return (
+        <div className="space-y-2">
+            <label className="text-sm font-medium">{label}</label>
+            <div className="flex items-center gap-3">
+                <input
+                    type="color"
+                    value={value}
+                    onChange={(e) => {
+                        setIsCustom(true)
+                        onChange(e.target.value)
+                    }}
+                    className="w-12 h-10 rounded cursor-pointer border-2 border-[var(--tg-theme-hint-color)]"
+                />
+                <select
+                    value={isCustom ? 'custom' : value}
+                    onChange={(e) => {
+                        const newValue = e.target.value
+                        if (newValue !== 'custom') {
+                            setIsCustom(false)
+                            onChange(newValue)
+                        }
+                    }}
+                    className="flex-1 px-3 py-2 rounded bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)] border border-[var(--tg-theme-hint-color)]"
+                >
+                    <option value="custom">Custom: {value}</option>
+                    {presets.map(preset => (
+                        <option key={preset.value} value={preset.value}>
+                            {preset.label}
+                        </option>
+                    ))}
+                </select>
+                <div
+                    className="w-10 h-10 rounded border-2 border-[var(--tg-theme-hint-color)]"
+                    style={{ backgroundColor: value }}
+                />
+            </div>
+        </div>
+    )
+}
+
+
+/components/DemoSection.tsx
+
+// components/DemoSection.tsx
+import { ReactNode } from 'react'
+import { motion } from 'framer-motion'
+
+interface DemoSectionProps {
+    title: string
+    children: ReactNode
+}
+
+export default function DemoSection({ title, children }: DemoSectionProps) {
+    return (
+        <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
+        >
+            <h2 className="text-xl font-bold flex items-center gap-2">
+                {title}
+            </h2>
+            <div className="space-y-4">
+                {children}
+            </div>
+        </motion.section>
+    )
+}
+
+
+/components/NavigationTabs.tsx
+
+// components/NavigationTabs.tsx
+import { motion } from 'framer-motion'
+
+interface Tab {
+    id: string
+    label: string
+    icon: string
+}
+
+const tabs: Tab[] = [
+    { id: 'init', label: 'Init Data', icon: '🔐' },
+    { id: 'core', label: 'Core API', icon: '🔧' },
+    { id: 'buttons', label: 'Buttons', icon: '🔘' },
+    { id: 'storage', label: 'Storage', icon: '💾' },
+    { id: 'haptics', label: 'Haptics', icon: '📳' },
+    { id: 'sensors', label: 'Sensors', icon: '📱' },
+    { id: 'biometrics', label: 'Biometrics', icon: '🔐' },
+    { id: 'data', label: 'Data', icon: '📤' },
+    { id: 'emoji', label: 'Emoji', icon: '😊' },
+    { id: 'files', label: 'Files', icon: '📥' },
+    { id: 'activity', label: 'Activity', icon: '📊' },
+    { id: 'game', label: 'Game', icon: '🎮' },
+    { id: 'payments', label: 'Payments', icon: '💰' },
+]
+
+interface NavigationTabsProps {
+    activeTab: string
+    onTabChange: (tab: string) => void
+}
+
+export default function NavigationTabs({ activeTab, onTabChange }: NavigationTabsProps) {
+    return (
+        <nav className="bg-[var(--tg-theme-secondary-bg-color)] p-2 overflow-x-auto">
+            <div className="flex gap-2 min-w-max">
+                {tabs.map((tab) => (
+                    <motion.button
+                        key={tab.id}
+                        onClick={() => onTabChange(tab.id)}
+                        className={`
+              px-4 py-2 rounded-full text-sm font-medium transition-colors
+              ${activeTab === tab.id
+                                ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
+                                : 'bg-transparent text-[var(--tg-theme-text-color)]'}
+            `}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <span className="mr-1">{tab.icon}</span>
+                        {tab.label}
+                    </motion.button>
+                ))}
+            </div>
+        </nav>
+    )
+}
+
+
+/components/demos/ActivityDemo.tsx
+
+// components/demos/ActivityDemo.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+export default function ActivityDemo() {
+    const { webApp } = useTelegram()
+    const [activityData, setActivityData] = useState({
+        isActive: true,
+        currentDuration: 0,
+        previousDuration: 0,
+        activatedAt: new Date()
+    })
+
+    useEffect(() => {
+        if (!webApp) return
+
+        let interval: NodeJS.Timeout
+
+        const handleActivated = () => {
+            setActivityData(prev => ({
+                ...prev,
+                isActive: true,
+                activatedAt: new Date()
+            }))
+
+            interval = setInterval(() => {
+                setActivityData(prev => ({
+                    ...prev,
+                    currentDuration: Date.now() - prev.activatedAt.getTime()
+                }))
+            }, 100)
+        }
+
+        const handleDeactivated = () => {
+            clearInterval(interval)
+            setActivityData(prev => ({
+                ...prev,
+                isActive: false,
+                previousDuration: Date.now() - prev.activatedAt.getTime()
+            }))
+        }
+
+        webApp.onEvent('activated', handleActivated)
+        webApp.onEvent('deactivated', handleDeactivated)
+
+        if (webApp.isActive) {
+            handleActivated()
+        }
+
+        return () => {
+            clearInterval(interval)
+            webApp.offEvent('activated', handleActivated)
+            webApp.offEvent('deactivated', handleDeactivated)
+        }
+    }, [webApp])
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="📊 Activity Tracking">
+                <div className="p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-lg">
+                    <div className="space-y-2">
+                        <div>
+                            Status: <span className="font-bold">
+                                {activityData.isActive ? '🟢 Active' : '🔴 Inactive'}
+                            </span>
+                        </div>
+                        <div>
+                            Current Session: {Math.round(activityData.currentDuration / 1000)}s
+                        </div>
+                        {activityData.previousDuration > 0 && (
+                            <div className="text-sm text-[var(--tg-theme-hint-color)]">
+                                Previous Session: {Math.round(activityData.previousDuration / 1000)}s
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Track user activity
+webApp.onEvent('activated', () => {
+  console.log('Mini App activated')
+  resumeGame()
+})
+
+webApp.onEvent('deactivated', () => {
+  console.log('Mini App deactivated')
+  pauseGame()
+  saveProgress()
+})
+
+// Check current status
+if (webApp.isActive) {
+  // App is currently active
+}`}
+                </CodeBlock>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/BiometricsDemo.tsx
+
+// components/demos/BiometricsDemo.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+export default function BiometricsDemo() {
+    const { webApp } = useTelegram()
+    const [biometricInfo, setBiometricInfo] = useState({
+        isInited: false,
+        isAvailable: false,
+        type: '',
+        isAccessRequested: false,
+        isAccessGranted: false,
+        isTokenSaved: false,
+        deviceId: ''
+    })
+    const [authToken, setAuthToken] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (!webApp) return
+
+        const updateBiometricInfo = () => {
+            const bm = webApp.BiometricManager
+            setBiometricInfo({
+                isInited: bm.isInited,
+                isAvailable: bm.isBiometricAvailable,
+                type: bm.biometricType,
+                isAccessRequested: bm.isAccessRequested,
+                isAccessGranted: bm.isAccessGranted,
+                isTokenSaved: bm.isBiometricTokenSaved,
+                deviceId: bm.deviceId
+            })
+        }
+
+        webApp.onEvent('biometricManagerUpdated', updateBiometricInfo)
+
+        // Only init if webApp is available
+        if (webApp.BiometricManager) {
+            webApp.BiometricManager.init()
+            updateBiometricInfo() // Call it once after init
+        }
+
+        return () => {
+            webApp.offEvent('biometricManagerUpdated', updateBiometricInfo)
+        }
+    }, [webApp])
+
+    const requestAccess = () => {
+        webApp?.BiometricManager.requestAccess(
+            { reason: 'To secure your game progress and purchases' },
+            (granted: boolean) => {
+                webApp.showAlert(`Biometric access ${granted ? 'granted' : 'denied'}`)
+            }
+        )
+    }
+
+    const authenticate = () => {
+        webApp?.BiometricManager.authenticate(
+            { reason: 'Verify your identity to continue' },
+            (success: boolean, token?: string) => {
+                if (success && token) {
+                    setAuthToken(token)
+                    webApp.HapticFeedback.notificationOccurred('success')
+                    webApp.showAlert('Authentication successful!')
+                } else {
+                    webApp.HapticFeedback.notificationOccurred('error')
+                    webApp.showAlert('Authentication failed')
+                }
+            }
+        )
+    }
+
+    const saveToken = () => {
+        const token = Math.random().toString(36).substring(7)
+        webApp?.BiometricManager.updateBiometricToken(token, (updated: boolean) => {
+            if (updated) {
+                webApp.showAlert('Token saved securely')
+            }
+        })
+    }
+
+    const removeToken = () => {
+        webApp?.BiometricManager.updateBiometricToken('', (updated: boolean) => {
+            if (updated) {
+                webApp.showAlert('Token removed')
+            }
+        })
+    }
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="🔐 Biometric Status">
+                <div className="space-y-2 text-sm">
+                    <div>Initialized: {biometricInfo.isInited ? '✅' : '❌'}</div>
+                    <div>Available: {biometricInfo.isAvailable ? '✅' : '❌'}</div>
+                    <div>Type: {biometricInfo.type || 'N/A'}</div>
+                    <div>Access Requested: {biometricInfo.isAccessRequested ? '✅' : '❌'}</div>
+                    <div>Access Granted: {biometricInfo.isAccessGranted ? '✅' : '❌'}</div>
+                    <div>Token Saved: {biometricInfo.isTokenSaved ? '✅' : '❌'}</div>
+                    <div className="text-xs text-[var(--tg-theme-hint-color)]">
+                        Device ID: {biometricInfo.deviceId || 'N/A'}
+                    </div>
+                </div>
+            </DemoSection>
+
+            <DemoSection title="🔑 Biometric Actions">
+                <div className="space-y-4">
+                    <button
+                        onClick={requestAccess}
+                        className="btn-primary w-full"
+                        disabled={biometricInfo.isAccessGranted}
+                    >
+                        Request Biometric Access
+                    </button>
+
+                    <button
+                        onClick={authenticate}
+                        className="btn-primary w-full"
+                        disabled={!biometricInfo.isAccessGranted}
+                    >
+                        Authenticate
+                    </button>
+
+                    {authToken && (
+                        <div className="p-3 bg-green-500/20 rounded text-sm">
+                            Auth Token: {authToken}
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <button
+                            onClick={saveToken}
+                            className="btn-primary"
+                            disabled={!biometricInfo.isAccessGranted}
+                        >
+                            Save Token
+                        </button>
+
+                        <button
+                            onClick={removeToken}
+                            className="btn-primary"
+                            disabled={!biometricInfo.isTokenSaved}
+                        >
+                            Remove Token
+                        </button>
+                    </div>
+
+                    {biometricInfo.isAccessRequested && !biometricInfo.isAccessGranted && (
+                        <button
+                            onClick={() => webApp?.BiometricManager.openSettings()}
+                            className="btn-secondary w-full"
+                        >
+                            Open Settings
+                        </button>
+                    )}
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Initialize biometrics
+webApp.BiometricManager.init()
+
+// Request access
+webApp.BiometricManager.requestAccess({
+ reason: 'To secure your game account'
+}, (granted) => {
+ if (granted) {
+   enableBiometricFeatures()
+ }
+})
+
+// Authenticate user
+webApp.BiometricManager.authenticate({
+ reason: 'Confirm purchase'
+}, (success, token) => {
+ if (success && token) {
+   // User authenticated
+   processPurchase(token)
+ }
+})
+
+// Save secure token
+const userToken = generateUserToken()
+webApp.BiometricManager.updateBiometricToken(
+ userToken,
+ (updated) => {
+   if (updated) {
+     // Token saved securely
+   }
+ }
+)`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="💡 Use Cases">
+                <div className="space-y-3">
+                    <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                        <h4 className="font-semibold">Secure Purchases</h4>
+                        <p className="text-sm text-[var(--tg-theme-hint-color)]">
+                            Require biometric auth before in-app purchases
+                        </p>
+                    </div>
+
+                    <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                        <h4 className="font-semibold">Account Protection</h4>
+                        <p className="text-sm text-[var(--tg-theme-hint-color)]">
+                            Lock sensitive game features behind biometrics
+                        </p>
+                    </div>
+
+                    <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                        <h4 className="font-semibold">Quick Login</h4>
+                        <p className="text-sm text-[var(--tg-theme-hint-color)]">
+                            Save auth token for passwordless access
+                        </p>
+                    </div>
+                </div>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/ButtonsDemo.tsx
+
+// components/demos/ButtonsDemo.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+export default function ButtonsDemo() {
+    const { webApp } = useTelegram()
+    const [mainButtonClicks, setMainButtonClicks] = useState(0)
+
+    useEffect(() => {
+        if (!webApp) return
+
+        // Setup Main Button
+        webApp.MainButton.setParams({
+            text: 'Click Me! 🎮',
+            color: '#FF6B6B',
+            has_shine_effect: true,
+            is_visible: true,
+        })
+
+        const handleMainClick = () => {
+            setMainButtonClicks(c => c + 1)
+            webApp.HapticFeedback.impactOccurred('medium')
+        }
+
+        webApp.MainButton.onClick(handleMainClick)
+
+        // Setup Secondary Button
+        webApp.SecondaryButton.setParams({
+            text: 'Secondary Action',
+            is_visible: true,
+        })
+
+        // Setup Back Button
+        webApp.BackButton.show()
+        webApp.BackButton.onClick(() => {
+            webApp.showAlert('Back button pressed!')
+        })
+
+        return () => {
+            webApp.MainButton.offClick(handleMainClick)
+            webApp.MainButton.hide()
+            webApp.SecondaryButton.hide()
+            webApp.BackButton.hide()
+        }
+    }, [webApp])
+
+    const toggleMainButton = () => {
+        if (webApp?.MainButton.isVisible) {
+            webApp?.MainButton.hide()
+        } else {
+            webApp?.MainButton.show()
+        }
+    }
+
+    const toggleProgress = () => {
+        if (webApp?.MainButton.isProgressVisible) {
+            webApp?.MainButton.hideProgress()
+        } else {
+            webApp?.MainButton.showProgress()
+        }
+    }
+
+    const changeSecondaryPosition = () => {
+        const positions: Array<'left' | 'right' | 'top' | 'bottom'> = ['left', 'top', 'right', 'bottom']
+        const currentIndex = positions.indexOf(webApp?.SecondaryButton.position || 'bottom')
+        const nextPosition = positions[(currentIndex + 1) % positions.length]
+        if (webApp?.SecondaryButton) {
+            webApp.SecondaryButton.position = nextPosition
+        }
+    }
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="🔘 Main Button">
+                <div className="space-y-4">
+                    <p>Main button clicks: {mainButtonClicks}</p>
+
+                    <button onClick={toggleMainButton} className="btn-primary">
+                        Toggle Main Button
+                    </button>
+
+                    <button onClick={toggleProgress} className="btn-primary">
+                        Toggle Progress
+                    </button>
+
+                    <button
+                        onClick={() => webApp?.MainButton.setText(`Clicks: ${mainButtonClicks}`)}
+                        className="btn-primary"
+                    >
+                        Update Text
+                    </button>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Main Button setup
+webApp.MainButton.setParams({
+  text: 'Start Game',
+  color: '#FF6B6B',
+  has_shine_effect: true,
+  is_visible: true
+})
+
+webApp.MainButton.onClick(() => {
+  // Handle click
+  startGame()
+})
+
+// Show progress
+webApp.MainButton.showProgress()
+
+// Update dynamically
+webApp.MainButton.setText('Loading...')`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🔲 Secondary Button">
+                <div className="space-y-4">
+                    <button onClick={changeSecondaryPosition} className="btn-primary">
+                        Change Position
+                    </button>
+
+                    <p className="text-sm">
+                        Current position: {webApp?.SecondaryButton.position}
+                    </p>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Secondary Button with position
+webApp.SecondaryButton.setParams({
+  text: 'Options',
+  is_visible: true
+})
+
+// Change position
+webApp.SecondaryButton.position = 'left'
+
+webApp.SecondaryButton.onClick(() => {
+  showOptions()
+})`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="⬅️ Navigation Buttons">
+                <div className="space-y-4">
+                    <button
+                        onClick={() => webApp?.SettingsButton.isVisible
+                            ? webApp.SettingsButton.hide()
+                            : webApp?.SettingsButton.show()
+                        }
+                        className="btn-primary"
+                    >
+                        Toggle Settings Button
+                    </button>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Back Button
+webApp.BackButton.show()
+webApp.BackButton.onClick(() => {
+  navigateBack()
+})
+
+// Settings Button  
+webApp.SettingsButton.show()
+webApp.SettingsButton.onClick(() => {
+  openSettings()
+})`}
+                </CodeBlock>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/CoreApiDemo.tsx
+
+// components/demos/CoreApiDemo.tsx
+'use client'
+
+import { useState } from 'react'
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+import ColorPicker from '@/components/ColorPicker'
+
+export default function CoreApiDemo() {
+    const { webApp } = useTelegram()
+    const [clipboardText, setClipboardText] = useState<string | null>(null)
+    const [mediaPermissions, setMediaPermissions] = useState({
+        video: '',
+        audio: '',
+        audioVideo: ''
+    })
+
+    // Add color states
+    const [customColors, setCustomColors] = useState({
+        header: webApp?.headerColor || '#000000',
+        background: webApp?.backgroundColor || '#ffffff',
+        bottomBar: webApp?.bottomBarColor || '#000000'
+    })
+
+    const readClipboard = () => {
+        webApp?.readTextFromClipboard((text: string | null) => {
+            setClipboardText(text)
+            webApp.HapticFeedback.notificationOccurred(text ? 'success' : 'error')
+        })
+    }
+
+    const requestWriteAccess = () => {
+        webApp?.requestWriteAccess((granted: boolean) => {
+            webApp.showAlert(`Write access ${granted ? 'granted' : 'denied'}`)
+        })
+    }
+
+    const requestContact = () => {
+        webApp?.requestContact((sent: boolean, event?: any) => {
+            webApp.showAlert(`Contact ${sent ? 'sent' : 'cancelled'}`)
+        })
+    }
+
+    const requestVideo = () => {
+        if (navigator.mediaDevices) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(() => {
+                    setMediaPermissions(prev => ({ ...prev, video: 'granted' }))
+                    webApp?.HapticFeedback.notificationOccurred('success')
+                })
+                .catch(() => {
+                    setMediaPermissions(prev => ({ ...prev, video: 'denied' }))
+                    webApp?.HapticFeedback.notificationOccurred('error')
+                })
+        } else {
+            webApp?.showAlert('Media devices not supported')
+        }
+    }
+
+    const requestAudio = () => {
+        if (navigator.mediaDevices) {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(() => {
+                    setMediaPermissions(prev => ({ ...prev, audio: 'granted' }))
+                    webApp?.HapticFeedback.notificationOccurred('success')
+                })
+                .catch(() => {
+                    setMediaPermissions(prev => ({ ...prev, audio: 'denied' }))
+                    webApp?.HapticFeedback.notificationOccurred('error')
+                })
+        } else {
+            webApp?.showAlert('Media devices not supported')
+        }
+    }
+
+    const requestAudioVideo = () => {
+        if (navigator.mediaDevices) {
+            navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+                .then(() => {
+                    setMediaPermissions(prev => ({ ...prev, audioVideo: 'granted' }))
+                    webApp?.HapticFeedback.notificationOccurred('success')
+                })
+                .catch(() => {
+                    setMediaPermissions(prev => ({ ...prev, audioVideo: 'denied' }))
+                    webApp?.HapticFeedback.notificationOccurred('error')
+                })
+        } else {
+            webApp?.showAlert('Media devices not supported')
+        }
+    }
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="📋 WebApp Information">
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>Version: <span className="font-semibold">{webApp?.version}</span></div>
+                    <div>Platform: <span className="font-semibold">{webApp?.platform}</span></div>
+                    <div>Color Scheme: <span className="font-semibold">{webApp?.colorScheme}</span></div>
+                    <div>Is Expanded: <span className="font-semibold">{webApp?.isExpanded ? 'Yes' : 'No'}</span></div>
+                    <div>Is Active: <span className="font-semibold">{webApp?.isActive ? 'Yes' : 'No'}</span></div>
+                    <div>Is Fullscreen: <span className="font-semibold">{webApp?.isFullscreen ? 'Yes' : 'No'}</span></div>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Access WebApp info
+const { webApp } = useTelegram()
+console.log(webApp.version)
+console.log(webApp.platform)
+console.log(webApp.colorScheme)
+console.log(webApp.isExpanded)
+console.log(webApp.isActive)`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🎨 Theme Management">
+                <div className="space-y-4">
+                    {/* Color Picker Section */}
+                    <div className="p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-lg space-y-4">
+                        <h4 className="font-semibold">Custom Color Picker</h4>
+
+                        <ColorPicker
+                            label="Header Color"
+                            value={customColors.header}
+                            presets={[
+                                { label: 'Default (bg_color)', value: 'bg_color' },
+                                { label: 'Secondary', value: 'secondary_bg_color' },
+                            ]}
+                            onChange={(color) => {
+                                setCustomColors(prev => ({ ...prev, header: color }))
+                                webApp?.setHeaderColor(color)
+                            }}
+                        />
+
+                        <ColorPicker
+                            label="Background Color"
+                            value={customColors.background}
+                            presets={[
+                                { label: 'Default (bg_color)', value: 'bg_color' },
+                                { label: 'Secondary', value: 'secondary_bg_color' },
+                            ]}
+                            onChange={(color) => {
+                                setCustomColors(prev => ({ ...prev, background: color }))
+                                webApp?.setBackgroundColor(color)
+                            }}
+                        />
+
+                        <ColorPicker
+                            label="Bottom Bar Color"
+                            value={customColors.bottomBar}
+                            presets={[
+                                { label: 'Default (bg_color)', value: 'bg_color' },
+                                { label: 'Secondary', value: 'secondary_bg_color' },
+                                { label: 'Bottom Bar', value: 'bottom_bar_bg_color' },
+                            ]}
+                            onChange={(color) => {
+                                setCustomColors(prev => ({ ...prev, bottomBar: color }))
+                                webApp?.setBottomBarColor(color)
+                            }}
+                        />
+                    </div>
+
+                    {/* Quick Preset Buttons */}
+                    <div className="space-y-3">
+                        <h4 className="font-semibold">Quick Presets</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => {
+                                    webApp?.setHeaderColor('secondary_bg_color')
+                                    webApp?.setBackgroundColor('bg_color')
+                                    webApp?.setBottomBarColor('secondary_bg_color')
+                                }}
+                                className="btn-primary"
+                            >
+                                Default Theme
+                            </button>
+                            <button
+                                onClick={() => {
+                                    webApp?.setHeaderColor('#1a1a1a')
+                                    webApp?.setBackgroundColor('#000000')
+                                    webApp?.setBottomBarColor('#1a1a1a')
+                                    setCustomColors({
+                                        header: '#1a1a1a',
+                                        background: '#000000',
+                                        bottomBar: '#1a1a1a'
+                                    })
+                                }}
+                                className="btn-primary"
+                            >
+                                Dark Theme
+                            </button>
+                            <button
+                                onClick={() => {
+                                    webApp?.setHeaderColor('#4CAF50')
+                                    webApp?.setBackgroundColor('#E8F5E9')
+                                    webApp?.setBottomBarColor('#4CAF50')
+                                    setCustomColors({
+                                        header: '#4CAF50',
+                                        background: '#E8F5E9',
+                                        bottomBar: '#4CAF50'
+                                    })
+                                }}
+                                className="btn-primary"
+                            >
+                                Green Theme
+                            </button>
+                            <button
+                                onClick={() => {
+                                    webApp?.setHeaderColor('#2196F3')
+                                    webApp?.setBackgroundColor('#E3F2FD')
+                                    webApp?.setBottomBarColor('#2196F3')
+                                    setCustomColors({
+                                        header: '#2196F3',
+                                        background: '#E3F2FD',
+                                        bottomBar: '#2196F3'
+                                    })
+                                }}
+                                className="btn-primary"
+                            >
+                                Blue Theme
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Current Theme Values */}
+                    <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded text-sm space-y-1">
+                        <div className="font-semibold mb-2">Current Theme Values:</div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>bg_color: <span className="font-mono">{webApp?.themeParams.bg_color}</span></div>
+                            <div>text_color: <span className="font-mono">{webApp?.themeParams.text_color}</span></div>
+                            <div>hint_color: <span className="font-mono">{webApp?.themeParams.hint_color}</span></div>
+                            <div>link_color: <span className="font-mono">{webApp?.themeParams.link_color}</span></div>
+                            <div>button_color: <span className="font-mono">{webApp?.themeParams.button_color}</span></div>
+                            <div>button_text_color: <span className="font-mono">{webApp?.themeParams.button_text_color}</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Theme customization
+webApp.setHeaderColor('#4CAF50')
+webApp.setBackgroundColor('#E8F5E9')
+webApp.setBottomBarColor('#4CAF50')
+
+// Use theme variables
+webApp.setHeaderColor('secondary_bg_color')
+webApp.setBackgroundColor('bg_color')
+
+// Access theme parameters
+const theme = webApp.themeParams
+console.log(theme.bg_color)
+console.log(theme.button_color)`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🔐 Permissions">
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-2">
+                        <button onClick={readClipboard} className="btn-primary">
+                            Read Clipboard
+                        </button>
+                        <button onClick={requestWriteAccess} className="btn-primary">
+                            Write Access
+                        </button>
+                    </div>
+
+                    {clipboardText !== null && (
+                        <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded text-sm">
+                            Clipboard: {clipboardText || '(empty)'}
+                        </div>
+                    )}
+
+                    <button onClick={requestContact} className="btn-primary w-full">
+                        Request Contact
+                    </button>
+
+                    <div className="border-t pt-4 mt-4">
+                        <h4 className="font-semibold mb-3">Media Permissions</h4>
+                        <div className="grid grid-cols-3 gap-2">
+                            <button onClick={requestVideo} className="btn-primary">
+                                📹 Video
+                            </button>
+                            <button onClick={requestAudio} className="btn-primary">
+                                🎤 Audio
+                            </button>
+                            <button onClick={requestAudioVideo} className="btn-primary">
+                                📹+🎤 Both
+                            </button>
+                        </div>
+
+                        {(mediaPermissions.video || mediaPermissions.audio || mediaPermissions.audioVideo) && (
+                            <div className="mt-3 space-y-1 text-sm">
+                                {mediaPermissions.video && (
+                                    <div>Video: <span className={mediaPermissions.video === 'granted' ? 'text-green-500' : 'text-red-500'}>
+                                        {mediaPermissions.video}
+                                    </span></div>
+                                )}
+                                {mediaPermissions.audio && (
+                                    <div>Audio: <span className={mediaPermissions.audio === 'granted' ? 'text-green-500' : 'text-red-500'}>
+                                        {mediaPermissions.audio}
+                                    </span></div>
+                                )}
+                                {mediaPermissions.audioVideo && (
+                                    <div>Audio+Video: <span className={mediaPermissions.audioVideo === 'granted' ? 'text-green-500' : 'text-red-500'}>
+                                        {mediaPermissions.audioVideo}
+                                    </span></div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Request permissions
+webApp.readTextFromClipboard((text) => {
+  console.log('Clipboard text:', text)
+})
+
+webApp.requestWriteAccess((granted) => {
+  if (granted) {
+    // Can now write to messages
+  }
+})
+
+webApp.requestContact((sent) => {
+  if (sent) {
+    // Contact shared with bot
+  }
+})
+
+// Media permissions
+navigator.mediaDevices.getUserMedia({ 
+  video: true,
+  audio: true 
+}).then((stream) => {
+  // Access granted
+}).catch((err) => {
+  // Access denied
+})`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🚀 Navigation & Links">
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-2">
+                        <button
+                            onClick={() => webApp?.openLink('https://telegram.org')}
+                            className="btn-primary"
+                        >
+                            Open External Link
+                        </button>
+                        <button
+                            onClick={() => webApp?.openTelegramLink('https://t.me/telegram')}
+                            className="btn-primary"
+                        >
+                            Open Telegram Link
+                        </button>
+                    </div>
+
+                    <button
+                        onClick={() => webApp?.openLink('https://telegra.ph/api', { try_instant_view: true })}
+                        className="btn-primary w-full"
+                    >
+                        Open with Instant View
+                    </button>
+
+                    <button
+                        onClick={() => webApp?.shareToStory('https://telegra.ph/file/5583ac37c90979f052b7b.png', {
+                            text: 'Check out my game score! 🎮',
+                            widget_link: {
+                                url: 'https://t.me/yourgamebot',
+                                name: 'Play Now'
+                            }
+                        })}
+                        className="btn-primary w-full"
+                    >
+                        Share to Story
+                    </button>
+
+                    <div className="border-t pt-4 mt-4">
+                        <h4 className="font-semibold mb-3">Browser Options</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => webApp?.openLink('https://telegram.org', { try_browser: 'chrome' })}
+                                className="btn-secondary text-sm"
+                            >
+                                Open in Chrome
+                            </button>
+                            <button
+                                onClick={() => webApp?.openLink('https://telegram.org', { try_browser: 'safari' })}
+                                className="btn-secondary text-sm"
+                            >
+                                Open in Safari
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Navigation examples
+webApp.openLink('https://example.com')
+webApp.openTelegramLink('https://t.me/botname')
+
+// Open with Instant View
+webApp.openLink('https://telegra.ph/api', {
+  try_instant_view: true
+})
+
+// Open in specific browser
+webApp.openLink('https://example.com', {
+  try_browser: 'chrome' // or 'safari', 'firefox', 'opera'
+})
+
+// Share to story
+webApp.shareToStory(imageUrl, {
+  text: 'My high score: 1000!',
+  widget_link: {
+    url: 'https://t.me/yourgamebot',
+    name: 'Play Now'
+  }
+})`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🔧 Utility Functions">
+                <div className="space-y-4">
+                    <button
+                        onClick={() => webApp?.expand()}
+                        className="btn-primary"
+                        disabled={webApp?.isExpanded}
+                    >
+                        Expand WebApp
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            webApp?.showAlert('This is an alert message!')
+                        }}
+                        className="btn-primary"
+                    >
+                        Show Alert
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            webApp?.showConfirm('Are you sure you want to continue?', (confirmed) => {
+                                webApp.showAlert(confirmed ? 'Confirmed!' : 'Cancelled')
+                            })
+                        }}
+                        className="btn-primary"
+                    >
+                        Show Confirm
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            const version = '7.0'
+                            const isSupported = webApp?.isVersionAtLeast(version)
+                            webApp?.showAlert(`Version ${version} ${isSupported ? 'is' : 'is not'} supported`)
+                        }}
+                        className="btn-primary"
+                    >
+                        Check Version Support
+                    </button>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Utility functions
+webApp.expand() // Expand to full height
+webApp.close() // Close Web App
+
+// Alerts
+webApp.showAlert('Hello!')
+webApp.showConfirm('Continue?', (confirmed) => {
+  if (confirmed) {
+    // User clicked OK
+  }
+})
+
+// Version check
+if (webApp.isVersionAtLeast('6.9')) {
+  // Use newer features
+}`}
+                </CodeBlock>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/DataCommDemo.tsx
+
+// components/demos/DataCommDemo.tsx
+'use client'
+
+import { useState } from 'react'
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+export default function DataCommDemo() {
+    const { webApp } = useTelegram()
+    const [message, setMessage] = useState('')
+    const [inlineQuery, setInlineQuery] = useState('')
+
+    const sendData = () => {
+        if (!message) {
+            webApp?.showAlert('Please enter a message')
+            return
+        }
+        webApp?.sendData(message)
+        webApp?.HapticFeedback.notificationOccurred('success')
+    }
+
+    const sendTime = () => {
+        const currentTime = new Date().toISOString()
+        webApp?.sendData(JSON.stringify({
+            type: 'time',
+            timestamp: currentTime,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        }))
+    }
+
+    const switchInline = () => {
+        webApp?.switchInlineQuery(inlineQuery || 'game_score:1000', ['users', 'groups'])
+    }
+
+    const invokeCustomMethod = () => {
+        webApp?.invokeCustomMethod('getCurrentTime', {}, (err, time) => {
+            if (err) {
+                webApp.showAlert(`Error: ${err}`)
+            } else {
+                webApp.showAlert(`Server time: ${new Date(time * 1000).toLocaleString()}`)
+            }
+        })
+    }
+
+    const toggleClosingConfirmation = () => {
+        if (webApp?.isClosingConfirmationEnabled) {
+            webApp.disableClosingConfirmation()
+        } else {
+            webApp?.enableClosingConfirmation()
+        }
+    }
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="📤 Send Data to Bot">
+                <div className="space-y-4">
+                    <input
+                        type="text"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Enter message to send"
+                        className="w-full p-3 rounded bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-text-color)]"
+                    />
+
+                    <button onClick={sendData} className="btn-primary w-full">
+                        Send Data to Bot
+                    </button>
+
+                    <button onClick={sendTime} className="btn-primary w-full">
+                        Send Current Time
+                    </button>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Send data to bot (keyboard button only)
+webApp.sendData(JSON.stringify({
+  action: 'submit_score',
+  score: 1000,
+  level: 5
+}))
+
+// Bot receives via web_app_data event
+bot.on('web_app_data', (ctx) => {
+  const data = JSON.parse(ctx.webAppData.data.text())
+  console.log('Received:', data)
+})`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🔄 Inline Query">
+                <div className="space-y-4">
+                    <input
+                        type="text"
+                        value={inlineQuery}
+                        onChange={(e) => setInlineQuery(e.target.value)}
+                        placeholder="Inline query text"
+                        className="w-full p-3 rounded bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-text-color)]"
+                    />
+
+                    <button onClick={switchInline} className="btn-primary w-full">
+                        Switch to Inline Mode
+                    </button>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Switch to inline mode
+webApp.switchInlineQuery(
+  'search_query',
+  ['users', 'groups'] // allowed chat types
+)`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🔧 Custom Methods">
+                <div className="space-y-4">
+                    <button onClick={invokeCustomMethod} className="btn-primary w-full">
+                        Get Server Time
+                    </button>
+
+                    <button onClick={toggleClosingConfirmation} className="btn-primary w-full">
+                        {webApp?.isClosingConfirmationEnabled ? 'Disable' : 'Enable'} Closing Confirmation
+                    </button>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Invoke custom bot method
+webApp.invokeCustomMethod(
+  'customMethod',
+  { param: 'value' },
+  (err, result) => {
+    if (!err) {
+      console.log('Result:', result)
+    }
+  }
+)
+
+// Enable closing confirmation
+webApp.enableClosingConfirmation()`}
+                </CodeBlock>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/EmojiStatusDemo.tsx
+
+// components/demos/EmojiStatusDemo.tsx
+'use client'
+
+import { useState } from 'react'
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+export default function EmojiStatusDemo() {
+    const { webApp } = useTelegram()
+    const [emojiId, setEmojiId] = useState('5213305508034783384')
+    const [duration, setDuration] = useState(300)
+
+    const setEmojiStatus = () => {
+        webApp?.setEmojiStatus(
+            emojiId,
+            duration ? { duration } : {},
+            (set: boolean) => {
+                webApp.HapticFeedback.notificationOccurred(set ? 'success' : 'error')
+                webApp.showAlert(set ? 'Emoji status set!' : 'Failed to set status')
+            }
+        )
+    }
+
+    const requestAccess = () => {
+        webApp?.requestEmojiStatusAccess((allowed: boolean) => {
+            webApp.showAlert(`Emoji status access ${allowed ? 'granted' : 'denied'}`)
+        })
+    }
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="😊 Emoji Status">
+                <div className="space-y-4">
+                    <input
+                        type="text"
+                        value={emojiId}
+                        onChange={(e) => setEmojiId(e.target.value)}
+                        placeholder="Custom emoji ID"
+                        className="w-full p-3 rounded bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-text-color)]"
+                    />
+
+                    <input
+                        type="number"
+                        value={duration}
+                        onChange={(e) => setDuration(parseInt(e.target.value))}
+                        placeholder="Duration (seconds)"
+                        className="w-full p-3 rounded bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-text-color)]"
+                    />
+
+                    <button onClick={requestAccess} className="btn-primary w-full">
+                        Request Emoji Status Access
+                    </button>
+
+                    <button onClick={setEmojiStatus} className="btn-primary w-full">
+                        Set Emoji Status
+                    </button>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Request emoji status access
+webApp.requestEmojiStatusAccess((allowed) => {
+  if (allowed) {
+    // Can now set emoji status
+  }
+})
+
+// Set emoji status
+webApp.setEmojiStatus(
+  'custom_emoji_id',
+  { duration: 300 }, // 5 minutes
+  (success) => {
+    console.log('Status set:', success)
+  }
+)`}
+                </CodeBlock>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/FileOperationsDemo.tsx
+
+// components/demos/FileOperationsDemo.tsx
+'use client'
+
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+export default function FileOperationsDemo() {
+    const { webApp } = useTelegram()
+
+    const downloadFile = (url: string, filename: string) => {
+        webApp?.downloadFile(
+            { url, file_name: filename },
+            (downloaded: boolean) => {
+                webApp.HapticFeedback.notificationOccurred(downloaded ? 'success' : 'error')
+                webApp.showAlert(downloaded ? 'Download started!' : 'Download declined')
+            }
+        )
+    }
+
+    const files = [
+        {
+            name: 'Sample Image',
+            url: 'https://telegra.ph/file/5583ac37c90979f052b7b.png',
+            filename: 'sample-image.png'
+        },
+        {
+            name: 'Sample Video',
+            url: 'https://telegra.ph/file/61f1dac694c3131a7b4ac.mp4',
+            filename: 'sample-video.mp4'
+        },
+        {
+            name: 'Sample PDF',
+            url: 'https://pdfobject.com/pdf/sample.pdf',
+            filename: 'sample-document.pdf'
+        }
+    ]
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="📥 File Downloads">
+                <div className="space-y-3">
+                    {files.map((file, index) => (
+                        <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded"
+                        >
+                            <span>{file.name}</span>
+                            <button
+                                onClick={() => downloadFile(file.url, file.filename)}
+                                className="btn-primary px-4 py-2"
+                            >
+                                Download
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Download file
+webApp.downloadFile({
+  url: 'https://example.com/file.pdf',
+  file_name: 'document.pdf'
+}, (downloaded) => {
+  if (downloaded) {
+    console.log('Download started')
+  }
+})`}
+                </CodeBlock>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/GameFeaturesDemo.tsx
+
+// components/demos/GameFeaturesDemo.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+import type { LocationData } from '@/types/telegram'
+
+export default function GameFeaturesDemo() {
+    const { webApp } = useTelegram()
+    const [isFullscreen, setIsFullscreen] = useState(false)
+    const [isOrientationLocked, setIsOrientationLocked] = useState(false)
+    const [locationData, setLocationData] = useState<LocationData | null>(null)
+    const [homeScreenStatus, setHomeScreenStatus] = useState<string>('')
+
+    useEffect(() => {
+        if (!webApp) return
+
+        webApp.onEvent('fullscreenChanged', () => {
+            setIsFullscreen(webApp.isFullscreen)
+        })
+
+        // Initialize location manager
+        webApp.LocationManager.init()
+
+        return () => {
+            webApp.offEvent('fullscreenChanged', () => { })
+        }
+    }, [webApp])
+
+    const toggleFullscreen = () => {
+        if (webApp?.isFullscreen) {
+            webApp?.exitFullscreen()
+        } else {
+            webApp?.requestFullscreen()
+        }
+    }
+
+    const toggleOrientation = () => {
+        if (webApp?.isOrientationLocked) {
+            webApp?.unlockOrientation()
+            setIsOrientationLocked(false)
+        } else {
+            webApp?.lockOrientation()
+            setIsOrientationLocked(true)
+        }
+    }
+
+    const toggleSwipes = () => {
+        if (webApp?.isVerticalSwipesEnabled) {
+            webApp?.disableVerticalSwipes()
+        } else {
+            webApp?.enableVerticalSwipes()
+        }
+    }
+
+    const getLocation = () => {
+        webApp?.LocationManager.getLocation((location: LocationData | null) => {
+            if (location) {
+                setLocationData(location)
+                webApp.HapticFeedback.notificationOccurred('success')
+            } else {
+                webApp.showAlert('Location access denied')
+            }
+        })
+    }
+
+    const checkHomeScreen = () => {
+        webApp?.checkHomeScreenStatus((status: string) => {
+            setHomeScreenStatus(status)
+        })
+    }
+
+    const showQRScanner = () => {
+        webApp?.showScanQrPopup(
+            { text: 'Scan QR code to unlock bonus level' },
+            (text: string) => {
+                webApp.showAlert(`Scanned: ${text}`)
+                return true
+            }
+        )
+    }
+
+    const showGamePopup = () => {
+        webApp?.showPopup({
+            title: 'Game Over!',
+            message: 'You scored 1,234 points! What would you like to do?',
+            buttons: [
+                { id: 'restart', type: 'default', text: 'Play Again' },
+                { id: 'share', type: 'default', text: 'Share Score' },
+                { type: 'cancel', text: 'Exit' }
+            ]
+        }, (buttonId: string | null) => {
+            if (buttonId === 'restart') {
+                webApp.showAlert('Restarting game...')
+            } else if (buttonId === 'share') {
+                webApp.shareToStory('https://example.com/score.jpg', {
+                    text: 'I just scored 1,234 points! Can you beat my score?'
+                })
+            }
+        })
+    }
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="🎮 Game Controls">
+                <div className="space-y-4">
+                    <button onClick={toggleFullscreen} className="btn-primary w-full">
+                        {isFullscreen ? 'Exit' : 'Enter'} Fullscreen
+                    </button>
+
+                    <button onClick={toggleOrientation} className="btn-primary w-full">
+                        {isOrientationLocked ? 'Unlock' : 'Lock'} Orientation
+                    </button>
+
+                    <button onClick={toggleSwipes} className="btn-primary w-full">
+                        {webApp?.isVerticalSwipesEnabled ? 'Disable' : 'Enable'} Vertical Swipes
+                    </button>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Fullscreen for immersive gaming
+webApp.requestFullscreen()
+webApp.onEvent('fullscreenChanged', () => {
+  if (webApp.isFullscreen) {
+    showGameUI()
+  }
+})
+
+// Lock orientation for consistent gameplay
+webApp.lockOrientation()
+
+// Disable swipes for game controls
+webApp.disableVerticalSwipes()`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="📍 Location Features">
+                <div className="space-y-4">
+                    <button onClick={getLocation} className="btn-primary w-full">
+                        Get Location
+                    </button>
+
+                    {locationData && (
+                        <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded text-sm">
+                            <div>Lat: {locationData.latitude.toFixed(6)}</div>
+                            <div>Lng: {locationData.longitude.toFixed(6)}</div>
+                            {locationData.altitude && <div>Alt: {locationData.altitude.toFixed(2)}m</div>}
+                            {locationData.speed && <div>Speed: {locationData.speed.toFixed(2)}m/s</div>}
+                        </div>
+                    )}
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Location-based gaming
+webApp.LocationManager.init()
+
+webApp.LocationManager.getLocation((location) => {
+  if (location) {
+    // Use for AR games, geocaching, etc
+    spawnNearbyItems(
+      location.latitude,
+      location.longitude
+    )
+  }
+})`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="📱 App Features">
+                <div className="space-y-4">
+                    <button onClick={() => webApp?.addToHomeScreen()} className="btn-primary w-full">
+                        Add to Home Screen
+                    </button>
+
+                    <button onClick={checkHomeScreen} className="btn-primary w-full">
+                        Check Home Screen Status
+                    </button>
+
+                    {homeScreenStatus && (
+                        <p className="text-sm text-center">Status: {homeScreenStatus}</p>
+                    )}
+
+                    <button onClick={showQRScanner} className="btn-primary w-full">
+                        Open QR Scanner
+                    </button>
+
+                    <button onClick={showGamePopup} className="btn-primary w-full">
+                        Show Game Popup
+                    </button>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Add to home screen for quick access
+webApp.addToHomeScreen()
+
+// QR code for bonus content
+webApp.showScanQrPopup({
+  text: 'Scan to unlock bonus'
+}, (qrText) => {
+  unlockBonus(qrText)
+  return true
+})
+
+// Game popups
+webApp.showPopup({
+  title: 'Level Complete!',
+  message: 'You earned 3 stars!',
+  buttons: [
+    { id: 'next', text: 'Next Level' },
+    { id: 'replay', text: 'Replay' },
+    { type: 'cancel' }
+  ]
+}, handleGameAction)`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🎯 Mini Game Example">
+                <div className="p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                    <TapGame />
+                </div>
+            </DemoSection>
+        </div>
+    )
+}
+
+// Mini tap game component
+function TapGame() {
+    const { webApp } = useTelegram()
+    const [score, setScore] = useState(0)
+    const [timeLeft, setTimeLeft] = useState(10)
+    const [isPlaying, setIsPlaying] = useState(false)
+
+    useEffect(() => {
+        if (!isPlaying || timeLeft <= 0) return
+
+        const timer = setTimeout(() => {
+            setTimeLeft(timeLeft - 1)
+            if (timeLeft === 1) {
+                endGame()
+            }
+        }, 1000)
+
+        return () => clearTimeout(timer)
+    }, [isPlaying, timeLeft])
+
+    const startGame = () => {
+        setScore(0)
+        setTimeLeft(10)
+        setIsPlaying(true)
+        webApp?.HapticFeedback.notificationOccurred('success')
+    }
+
+    const endGame = () => {
+        setIsPlaying(false)
+        webApp?.HapticFeedback.notificationOccurred('warning')
+        webApp?.MainButton.setText(`Score: ${score}`)
+        webApp?.MainButton.show()
+    }
+
+    const tap = () => {
+        if (!isPlaying) return
+        setScore(score + 1)
+        webApp?.HapticFeedback.impactOccurred('light')
+    }
+
+    return (
+        <div className="text-center space-y-4">
+            <h3 className="text-xl font-bold">Tap Game</h3>
+
+            {!isPlaying ? (
+                <button onClick={startGame} className="btn-primary">
+                    Start Game
+                </button>
+            ) : (
+                <>
+                    <div className="text-3xl font-bold">{timeLeft}s</div>
+                    <div className="text-2xl">Score: {score}</div>
+                    <button
+                        onClick={tap}
+                        className="w-32 h-32 bg-[var(--tg-theme-button-color)] rounded-full text-4xl animate-pulse"
+                    >
+                        👆
+                    </button>
+                </>
+            )}
+        </div>
+    )
+}
+
+
+/components/demos/HapticsDemo.tsx
+
+// components/demos/HapticsDemo.tsx
+'use client'
+
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+export default function HapticsDemo() {
+    const { webApp } = useTelegram()
+
+    const impactStyles = ['light', 'medium', 'heavy', 'rigid', 'soft'] as const
+    const notificationTypes = ['error', 'success', 'warning'] as const
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="💥 Impact Haptics">
+                <div className="grid grid-cols-2 gap-2">
+                    {impactStyles.map(style => (
+                        <button
+                            key={style}
+                            onClick={() => webApp?.HapticFeedback.impactOccurred(style)}
+                            className="btn-primary capitalize"
+                        >
+                            {style}
+                        </button>
+                    ))}
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Impact haptics for game events
+webApp.HapticFeedback.impactOccurred('light')   // Tap
+webApp.HapticFeedback.impactOccurred('medium')  // Button press
+webApp.HapticFeedback.impactOccurred('heavy')   // Collision
+webApp.HapticFeedback.impactOccurred('rigid')   // Hard stop
+webApp.HapticFeedback.impactOccurred('soft')    // Soft bounce`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🔔 Notification Haptics">
+                <div className="grid grid-cols-3 gap-2">
+                    {notificationTypes.map(type => (
+                        <button
+                            key={type}
+                            onClick={() => webApp?.HapticFeedback.notificationOccurred(type)}
+                            className={`btn-primary capitalize ${type === 'error' ? 'bg-red-500' :
+                                    type === 'success' ? 'bg-green-500' :
+                                        'bg-yellow-500'
+                                }`}
+                        >
+                            {type}
+                        </button>
+                    ))}
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Notification haptics
+webApp.HapticFeedback.notificationOccurred('success') // Level complete
+webApp.HapticFeedback.notificationOccurred('error')   // Game over
+webApp.HapticFeedback.notificationOccurred('warning') // Low health`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🎯 Selection Haptics">
+                <button
+                    onClick={() => webApp?.HapticFeedback.selectionChanged()}
+                    className="btn-primary w-full"
+                >
+                    Selection Changed
+                </button>
+
+                <CodeBlock language="typescript">
+                    {`// Selection feedback
+// Use when user selects items in a list
+items.forEach((item, index) => {
+  item.addEventListener('click', () => {
+    webApp.HapticFeedback.selectionChanged()
+    selectItem(index)
+  })
+})`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🎮 Game Examples">
+                <div className="space-y-4 p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-lg">
+                    <div>
+                        <h4 className="font-semibold">Clicker Game</h4>
+                        <p className="text-sm text-[var(--tg-theme-hint-color)]">
+                            Light impact on each tap
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 className="font-semibold">Puzzle Game</h4>
+                        <p className="text-sm text-[var(--tg-theme-hint-color)]">
+                            Selection changed when moving pieces
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 className="font-semibold">Action Game</h4>
+                        <p className="text-sm text-[var(--tg-theme-hint-color)]">
+                            Heavy impact for explosions, error for game over
+                        </p>
+                    </div>
+                </div>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/InitDataDemo.tsx
+
+// components/demos/InitDataDemo.tsx
+'use client'
+
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+export default function InitDataDemo() {
+    const { webApp } = useTelegram()
+    const initData = webApp?.initData || ''
+    const initDataUnsafe = webApp?.initDataUnsafe || {}
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="🔐 Init Data">
+                <div className="space-y-4">
+                    <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                        <h4 className="font-semibold mb-2">Raw Init Data</h4>
+                        <p className="text-xs break-all font-mono">
+                            {initData || 'No init data available'}
+                        </p>
+                    </div>
+
+                    <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                        <h4 className="font-semibold mb-2">Parsed Data</h4>
+                        <pre className="text-xs overflow-auto">
+                            {JSON.stringify(initDataUnsafe, null, 2)}
+                        </pre>
+                    </div>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Send init data to backend for validation
+fetch('/api/validate', {
+  method: 'POST',
+  headers: {
+    'Authorization': \`tma \${webApp.initData}\`
+  }
+})
+
+// Backend validation (Node.js)
+const crypto = require('crypto')
+
+function validateInitData(initData, botToken) {
+  const urlParams = new URLSearchParams(initData)
+  const hash = urlParams.get('hash')
+  urlParams.delete('hash')
+  
+  const dataCheckString = [...urlParams.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => \`\${k}=\${v}\`)
+    .join('\\n')
+  
+  const secretKey = crypto
+    .createHmac('sha256', 'WebAppData')
+    .update(botToken)
+    .digest()
+  
+  const calculatedHash = crypto
+    .createHmac('sha256', secretKey)
+    .update(dataCheckString)
+    .digest('hex')
+  
+  return calculatedHash === hash
+}`}
+                </CodeBlock>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/PaymentsDemo.tsx
+
+// components/demos/PaymentsDemo.tsx
+'use client'
+
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+export default function PaymentsDemo() {
+    const { webApp, user } = useTelegram()
+
+    const openInvoice = (item: string, price: string) => {
+        // In a real app, you would generate this URL from your backend
+        const invoiceUrl = `https://t.me/$your_bot?startapp=invoice_${item}`
+
+        webApp?.openInvoice(invoiceUrl, (status: string) => {
+            if (status === 'paid') {
+                webApp.HapticFeedback.notificationOccurred('success')
+                webApp.showAlert(`Thank you for purchasing ${item}!`)
+            } else if (status === 'cancelled') {
+                webApp.showAlert('Purchase cancelled')
+            } else {
+                webApp.showAlert('Payment failed')
+            }
+        })
+    }
+
+    const premiumFeatures = [
+        { id: 'remove_ads', name: 'Remove Ads', price: '$2.99' },
+        { id: 'premium_skins', name: 'Premium Skins', price: '$4.99' },
+        { id: 'double_coins', name: 'Double Coins', price: '$9.99' },
+        { id: 'vip_bundle', name: 'VIP Bundle', price: '$19.99' }
+    ]
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="💎 Premium Status">
+                <div className="p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                    <div className="flex items-center justify-between">
+                        <span>Telegram Premium</span>
+                        <span className="font-bold">
+                            {user?.is_premium ? '✅ Active' : '❌ Not Active'}
+                        </span>
+                    </div>
+                    {user?.is_premium && (
+                        <p className="text-sm text-[var(--tg-theme-hint-color)] mt-2">
+                            Premium users get 20% off all purchases!
+                        </p>
+                    )}
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Check premium status
+if (webApp.initDataUnsafe.user?.is_premium) {
+  // Apply premium benefits
+  applyDiscount(0.2) // 20% off
+  unlockPremiumFeatures()
+}`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🛒 In-App Purchases">
+                <div className="space-y-3">
+                    {premiumFeatures.map(item => (
+                        <div
+                            key={item.id}
+                            className="flex items-center justify-between p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded"
+                        >
+                            <div>
+                                <div className="font-semibold">{item.name}</div>
+                                <div className="text-sm text-[var(--tg-theme-hint-color)]">
+                                    {user?.is_premium ? (
+                                        <>
+                                            <span className="line-through">{item.price}</span>
+                                            <span className="ml-2 text-green-500">
+                                                ${(parseFloat(item.price.slice(1)) * 0.8).toFixed(2)}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        item.price
+                                    )}
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => openInvoice(item.name, item.price)}
+                                className="btn-primary px-4 py-2"
+                            >
+                                Buy
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Process payment
+webApp.openInvoice(invoiceUrl, (status) => {
+  if (status === 'paid') {
+    // Payment successful
+    unlockPurchasedItem()
+    saveToCloudStorage()
+    showSuccessAnimation()
+  } else if (status === 'cancelled') {
+    // User cancelled
+    console.log('Payment cancelled')
+  } else {
+    // Payment failed
+    showError('Payment failed')
+  }
+})`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🎁 Monetization Strategies">
+                <div className="space-y-3">
+                    <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                        <h4 className="font-semibold">Cosmetic Items</h4>
+                        <p className="text-sm text-[var(--tg-theme-hint-color)]">
+                            Skins, themes, avatars - no gameplay advantage
+                        </p>
+                    </div>
+
+                    <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                        <h4 className="font-semibold">Time Savers</h4>
+                        <p className="text-sm text-[var(--tg-theme-hint-color)]">
+                            Skip timers, instant upgrades, energy refills
+                        </p>
+                    </div>
+
+                    <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                        <h4 className="font-semibold">Premium Currency</h4>
+                        <p className="text-sm text-[var(--tg-theme-hint-color)]">
+                            Gems, coins, tokens with bonus packages
+                        </p>
+                    </div>
+
+                    <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                        <h4 className="font-semibold">Battle Pass</h4>
+                        <p className="text-sm text-[var(--tg-theme-hint-color)]">
+                            Seasonal content with free and premium tracks
+                        </p>
+                    </div>
+                </div>
+            </DemoSection>
+
+            <DemoSection title="💡 Best Practices">
+                <div className="prose prose-sm text-[var(--tg-theme-text-color)]">
+                    <ul className="space-y-2">
+                        <li>Always validate purchases on your backend</li>
+                        <li>Store purchase history in CloudStorage</li>
+                        <li>Offer special discounts for Premium users</li>
+                        <li>Use biometric auth for high-value purchases</li>
+                        <li>Implement restore purchases functionality</li>
+                        <li>Show clear value proposition for each item</li>
+                    </ul>
+                </div>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/SensorsDemo.tsx
+
+// components/demos/SensorsDemo.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+export default function SensorsDemo() {
+    const { webApp } = useTelegram()
+    const [accelerometer, setAccelerometer] = useState({ x: 0, y: 0, z: 0 })
+    const [gyroscope, setGyroscope] = useState({ x: 0, y: 0, z: 0 })
+    const [orientation, setOrientation] = useState({ alpha: 0, beta: 0, gamma: 0 })
+
+    useEffect(() => {
+        if (!webApp) return
+
+        // Accelerometer
+        webApp.onEvent('accelerometerChanged', function () {
+            setAccelerometer({
+                x: webApp.Accelerometer.x,
+                y: webApp.Accelerometer.y,
+                z: webApp.Accelerometer.z
+            })
+        })
+
+        // Gyroscope
+        webApp.onEvent('gyroscopeChanged', function () {
+            setGyroscope({
+                x: webApp.Gyroscope.x,
+                y: webApp.Gyroscope.y,
+                z: webApp.Gyroscope.z
+            })
+        })
+
+        // Device Orientation
+        webApp.onEvent('deviceOrientationChanged', function () {
+            setOrientation({
+                alpha: webApp.DeviceOrientation.alpha,
+                beta: webApp.DeviceOrientation.beta,
+                gamma: webApp.DeviceOrientation.gamma
+            })
+        })
+    }, [webApp])
+
+    const toggleAccelerometer = () => {
+        if (webApp?.Accelerometer.isStarted) {
+            webApp.Accelerometer.stop()
+        } else {
+            webApp?.Accelerometer.start({ refresh_rate: 60 })
+        }
+    }
+
+    const toggleGyroscope = () => {
+        if (webApp?.Gyroscope.isStarted) {
+            webApp.Gyroscope.stop()
+        } else {
+            webApp?.Gyroscope.start({ refresh_rate: 60 })
+        }
+    }
+
+    const toggleOrientation = () => {
+        if (webApp?.DeviceOrientation.isStarted) {
+            webApp.DeviceOrientation.stop()
+        } else {
+            webApp?.DeviceOrientation.start({ refresh_rate: 60 })
+        }
+    }
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="📊 Accelerometer">
+                <div className="space-y-4">
+                    <button onClick={toggleAccelerometer} className="btn-primary w-full">
+                        {webApp?.Accelerometer.isStarted ? 'Stop' : 'Start'} Accelerometer
+                    </button>
+
+                    <div className="p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-lg font-mono text-sm">
+                        <div>X: {accelerometer.x.toFixed(3)}</div>
+                        <div>Y: {accelerometer.y.toFixed(3)}</div>
+                        <div>Z: {accelerometer.z.toFixed(3)}</div>
+                    </div>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Accelerometer for motion controls
+webApp.Accelerometer.start({ refresh_rate: 60 })
+
+webApp.onEvent('accelerometerChanged', () => {
+  const { x, y, z } = webApp.Accelerometer
+  
+  // Use for tilt controls
+  player.velocity.x = x * sensitivity
+  player.velocity.y = y * sensitivity
+})`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🌀 Gyroscope">
+                <div className="space-y-4">
+                    <button onClick={toggleGyroscope} className="btn-primary w-full">
+                        {webApp?.Gyroscope.isStarted ? 'Stop' : 'Start'} Gyroscope
+                    </button>
+
+                    <div className="p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-lg font-mono text-sm">
+                        <div>X: {gyroscope.x.toFixed(3)}</div>
+                        <div>Y: {gyroscope.y.toFixed(3)}</div>
+                        <div>Z: {gyroscope.z.toFixed(3)}</div>
+                    </div>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Gyroscope for rotation
+webApp.Gyroscope.start({ refresh_rate: 60 })
+
+webApp.onEvent('gyroscopeChanged', () => {
+  const { x, y, z } = webApp.Gyroscope
+  
+  // Use for 3D rotation
+  camera.rotation.x += x * deltaTime
+  camera.rotation.y += y * deltaTime
+})`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="📐 Device Orientation">
+                <div className="space-y-4">
+                    <button onClick={toggleOrientation} className="btn-primary w-full">
+                        {webApp?.DeviceOrientation.isStarted ? 'Stop' : 'Start'} Orientation
+                    </button>
+
+                    <div className="p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-lg font-mono text-sm">
+                        <div>Alpha: {orientation.alpha.toFixed(1)}°</div>
+                        <div>Beta: {orientation.beta.toFixed(1)}°</div>
+                        <div>Gamma: {orientation.gamma.toFixed(1)}°</div>
+                    </div>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Device orientation for AR/VR
+webApp.DeviceOrientation.start({ 
+  refresh_rate: 60,
+  need_absolute: true 
+})
+
+webApp.onEvent('deviceOrientationChanged', () => {
+  const { alpha, beta, gamma } = webApp.DeviceOrientation
+  
+  // Use for AR camera view
+  arCamera.setRotation(alpha, beta, gamma)
+})`}
+                </CodeBlock>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/components/demos/StorageDemo.tsx
+
+// components/demos/StorageDemo.tsx
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useTelegram } from '@/providers/TelegramProvider'
+import DemoSection from '@/components/DemoSection'
+import CodeBlock from '@/components/CodeBlock'
+
+interface GameData {
+    level: number
+    score: number
+    achievements: string[]
+}
+
+export default function StorageDemo() {
+    const { webApp } = useTelegram()
+    const [gameData, setGameData] = useState<GameData>({
+        level: 1,
+        score: 0,
+        achievements: []
+    })
+    const [savedKeys, setSavedKeys] = useState<string[]>([])
+    const [loading, setLoading] = useState(false)
+
+    const loadGameData = async () => {
+        setLoading(true)
+        webApp?.CloudStorage.getItem('gameData', (err, value) => {
+            if (!err && value) {
+                setGameData(JSON.parse(value))
+            }
+            setLoading(false)
+        })
+    }
+
+    const saveGameData = async () => {
+        const data = JSON.stringify(gameData)
+        webApp?.CloudStorage.setItem('gameData', data, (err, stored) => {
+            if (stored) {
+                webApp.showAlert('Game saved!')
+                webApp.HapticFeedback.notificationOccurred('success')
+            }
+        })
+    }
+
+    const loadAllKeys = () => {
+        webApp?.CloudStorage.getKeys((err, keys) => {
+            if (!err && keys) {
+                setSavedKeys(keys)
+            }
+        })
+    }
+
+    useEffect(() => {
+        if (webApp) {
+            loadGameData()
+            loadAllKeys()
+        }
+    }, [webApp])
+
+    return (
+        <div className="space-y-6">
+            <DemoSection title="💾 Cloud Storage">
+                <div className="space-y-4">
+                    <div className="p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-lg">
+                        <h4 className="font-semibold mb-2">Game Data</h4>
+                        <div className="space-y-1 text-sm">
+                            <div>Level: {gameData.level}</div>
+                            <div>Score: {gameData.score}</div>
+                            <div>Achievements: {gameData.achievements.join(', ') || 'None'}</div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <button
+                            onClick={() => setGameData(d => ({ ...d, level: d.level + 1 }))}
+                            className="btn-primary"
+                        >
+                            Level Up
+                        </button>
+
+                        <button
+                            onClick={() => setGameData(d => ({ ...d, score: d.score + 100 }))}
+                            className="btn-primary"
+                        >
+                            Add Score
+                        </button>
+                    </div>
+
+                    <button onClick={saveGameData} className="btn-primary w-full">
+                        Save Game
+                    </button>
+
+                    <button onClick={loadGameData} className="btn-primary w-full" disabled={loading}>
+                        {loading ? 'Loading...' : 'Load Game'}
+                    </button>
+                </div>
+
+                <CodeBlock language="typescript">
+                    {`// Save game data
+const gameData = {
+  level: 5,
+  score: 1000,
+  achievements: ['first_win', 'speed_run']
+}
+
+webApp.CloudStorage.setItem(
+  'gameData', 
+  JSON.stringify(gameData),
+  (err, stored) => {
+    if (stored) {
+      console.log('Game saved!')
+    }
+  }
+)
+
+// Load game data
+webApp.CloudStorage.getItem('gameData', (err, value) => {
+  if (!err && value) {
+    const gameData = JSON.parse(value)
+    restoreGameState(gameData)
+  }
+})
+
+// Get all saved keys
+webApp.CloudStorage.getKeys((err, keys) => {
+  console.log('Saved keys:', keys)
+})`}
+                </CodeBlock>
+            </DemoSection>
+
+            <DemoSection title="🔑 Saved Keys">
+                <div className="space-y-2">
+                    {savedKeys.length > 0 ? (
+                        savedKeys.map(key => (
+                            <div key={key} className="p-2 bg-[var(--tg-theme-secondary-bg-color)] rounded">
+                                {key}
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-[var(--tg-theme-hint-color)]">No saved data</p>
+                    )}
+                </div>
+            </DemoSection>
+        </div>
+    )
+}
+
+
+/hooks/useCloudStorage.ts
+
+// hooks/useCloudStorage.ts
+import { useState, useCallback } from 'react'
+import { useTelegram } from '@/providers/TelegramProvider'
+
+export function useCloudStorage() {
+    const { webApp } = useTelegram()
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    const setItem = useCallback(async (key: string, value: string): Promise<boolean> => {
+        setLoading(true)
+        setError(null)
+
+        return new Promise((resolve) => {
+            webApp?.CloudStorage.setItem(key, value, (err, stored) => {
+                setLoading(false)
+                if (err) {
+                    setError(err.message)
+                    resolve(false)
+                } else {
+                    resolve(stored || false)
+                }
+            })
+        })
+    }, [webApp])
+
+    const getItem = useCallback(async (key: string): Promise<string | null> => {
+        setLoading(true)
+        setError(null)
+
+        return new Promise((resolve) => {
+            webApp?.CloudStorage.getItem(key, (err, value) => {
+                setLoading(false)
+                if (err) {
+                    setError(err.message)
+                    resolve(null)
+                } else {
+                    resolve(value || null)
+                }
+            })
+        })
+    }, [webApp])
+
+    const removeItem = useCallback(async (key: string): Promise<boolean> => {
+        setLoading(true)
+        setError(null)
+
+        return new Promise((resolve) => {
+            webApp?.CloudStorage.removeItem(key, (err, removed) => {
+                setLoading(false)
+                if (err) {
+                    setError(err.message)
+                    resolve(false)
+                } else {
+                    resolve(removed || false)
+                }
+            })
+        })
+    }, [webApp])
+
+    const getKeys = useCallback(async (): Promise<string[]> => {
+        setLoading(true)
+        setError(null)
+
+        return new Promise((resolve) => {
+            webApp?.CloudStorage.getKeys((err, keys) => {
+                setLoading(false)
+                if (err) {
+                    setError(err.message)
+                    resolve([])
+                } else {
+                    resolve(keys || [])
+                }
+            })
+        })
+    }, [webApp])
+
+    return {
+        setItem,
+        getItem,
+        removeItem,
+        getKeys,
+        loading,
+        error
+    }
+}
+
+
+/hooks/useHaptic.ts
+
+// hooks/useHaptic.ts
+import { useTelegram } from '@/providers/TelegramProvider'
+
+export function useHaptic() {
+    const { webApp } = useTelegram()
+
+    const impact = (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft' = 'light') => {
+        webApp?.HapticFeedback.impactOccurred(style)
+    }
+
+    const notification = (type: 'error' | 'success' | 'warning') => {
+        webApp?.HapticFeedback.notificationOccurred(type)
+    }
+
+    const selection = () => {
+        webApp?.HapticFeedback.selectionChanged()
+    }
+
+    return { impact, notification, selection }
+}
+
+
+/next-env.d.ts
+
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+
+
+
+/next.config.ts
+
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+
+
+
+/package.json
+
+{
+  "name": "telekit",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "consolidate:ts": "tsx ./scripts/consolidate-code.ts"
+  },
+  "dependencies": {
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "@vercel/analytics": "^1.5.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.19.2",
+    "lucide-react": "^0.525.0",
+    "lz-string": "^1.5.0",
+    "next": "15.3.4",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.13",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-syntax-highlighter": "^15.6.1",
+    "react-use": "^17.6.0",
+    "sonner": "^2.0.5",
+    "zustand": "^5.0.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+
+
+
+/providers/TelegramProvider.tsx
+
+// providers/TelegramProvider.tsx
+'use client'
+
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { useTelegramStore } from '@/store/telegram'
+import { TelegramWebApp, WebAppUser } from '@/types/telegram'
+
+interface TelegramContextType {
+    webApp: TelegramWebApp | null
+    user: WebAppUser | null
+    isReady: boolean
+}
+
+const TelegramContext = createContext<TelegramContextType>({
+    webApp: null,
+    user: null,
+    isReady: false,
+})
+
+export function TelegramProvider({ children }: { children: ReactNode }) {
+    const [isReady, setIsReady] = useState(false)
+    const [webApp, setWebAppState] = useState<TelegramWebApp | null>(null)
+    const [user, setUserState] = useState<WebAppUser | null>(null)
+    const { setWebApp, setUser, setTheme } = useTelegramStore()
+
+    useEffect(() => {
+        // Only access window in useEffect to ensure it runs on client side
+        if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+            const tgWebApp = window.Telegram.WebApp
+
+            // Initialize WebApp
+            tgWebApp.ready()
+            tgWebApp.expand()
+
+            // Set theme class
+            document.documentElement.className = tgWebApp.colorScheme
+
+            // Store in local state
+            setWebAppState(tgWebApp)
+            setUserState(tgWebApp.initDataUnsafe.user || null)
+
+            // Store in Zustand
+            setWebApp(tgWebApp)
+            setUser(tgWebApp.initDataUnsafe.user || null)
+            setTheme(tgWebApp.themeParams)
+
+            // Listen to theme changes
+            tgWebApp.onEvent('themeChanged', () => {
+                document.documentElement.className = tgWebApp.colorScheme
+                setTheme(tgWebApp.themeParams)
+            })
+
+            setIsReady(true)
+        }
+    }, [setWebApp, setUser, setTheme])
+
+    const value = {
+        webApp,
+        user,
+        isReady,
+    }
+
+    return (
+        <TelegramContext.Provider value={value}>
+            {children}
+        </TelegramContext.Provider>
+    )
+}
+
+export const useTelegram = () => {
+    const context = useContext(TelegramContext)
+    if (!context) {
+        throw new Error('useTelegram must be used within TelegramProvider')
+    }
+    return context
+}
+
+
+/store/telegram.ts
+
+// store/telegram.ts
+import { TelegramWebApp, ThemeParams, WebAppUser } from '@/types/telegram'
+import { create } from 'zustand'
+
+interface TelegramStore {
+    webApp: TelegramWebApp | null
+    user: WebAppUser | null
+    theme: ThemeParams | null
+    setWebApp: (webApp: TelegramWebApp) => void
+    setUser: (user: WebAppUser | null) => void
+    setTheme: (theme: ThemeParams) => void
+}
+
+export const useTelegramStore = create<TelegramStore>((set) => ({
+    webApp: null,
+    user: null,
+    theme: null,
+    setWebApp: (webApp) => set({ webApp }),
+    setUser: (user) => set({ user }),
+    setTheme: (theme) => set({ theme }),
+}))
+
+
+/tsconfig.json
+
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+
+
+
+/types/telegram.d.ts
+
+// types/telegram.d.ts
+export interface TelegramWebApp {
+    initData: string;
+    initDataUnsafe: WebAppInitData;
+    version: string;
+    platform: string;
+    colorScheme: 'light' | 'dark';
+    themeParams: ThemeParams;
+    isExpanded: boolean;
+    viewportHeight: number;
+    viewportStableHeight: number;
+    headerColor: string;
+    backgroundColor: string;
+    bottomBarColor: string;
+    isClosingConfirmationEnabled: boolean;
+    isVerticalSwipesEnabled: boolean;
+    isActive: boolean;
+    isFullscreen: boolean;
+    isOrientationLocked: boolean;
+
+    MainButton: MainButton;
+    SecondaryButton: SecondaryButton;
+    BackButton: BackButton;
+    SettingsButton: SettingsButton;
+    HapticFeedback: HapticFeedback;
+    CloudStorage: CloudStorage;
+    BiometricManager: BiometricManager;
+    Accelerometer: Accelerometer;
+    DeviceOrientation: DeviceOrientation;
+    Gyroscope: Gyroscope;
+    LocationManager: LocationManager;
+
+    // Methods
+    ready(): void;
+    expand(): void;
+    close(): void;
+    enableClosingConfirmation(): void;
+    disableClosingConfirmation(): void;
+    enableVerticalSwipes(): void;
+    disableVerticalSwipes(): void;
+    setHeaderColor(color: string): void;
+    setBackgroundColor(color: string): void;
+    setBottomBarColor(color: string): void;
+    requestFullscreen(): void;
+    exitFullscreen(): void;
+    lockOrientation(): void;
+    unlockOrientation(): void;
+    requestWriteAccess(callback?: (granted: boolean) => void): void;
+    requestContact(callback?: (sent: boolean, event?: any) => void): void;
+    readTextFromClipboard(callback?: (text: string | null) => void): void;
+    shareToStory(mediaUrl: string, params?: ShareStoryParams): void;
+    downloadFile(params: DownloadFileParams, callback?: (downloaded: boolean) => void): void;
+    addToHomeScreen(): void;
+    checkHomeScreenStatus(callback?: (status: string) => void): void;
+    openLink(url: string, options?: OpenLinkOptions): void;
+    openTelegramLink(url: string, options?: any): void;
+    openInvoice(url: string, callback?: (status: string) => void): void;
+    showPopup(params: PopupParams, callback?: (buttonId: string | null) => void): void;
+    showAlert(message: string, callback?: () => void): void;
+    showConfirm(message: string, callback?: (confirmed: boolean) => void): void;
+    showScanQrPopup(params?: ScanQrPopupParams, callback?: (text: string) => boolean | void): void;
+    isVersionAtLeast(version: string): boolean;
+    setEmojiStatus(customEmojiId: string, params?: EmojiStatusParams, callback?: (set: boolean) => void): void;
+    requestEmojiStatusAccess(callback?: (allowed: boolean) => void): void;
+    sendData(data: string): void;
+    switchInlineQuery(query: string, chooseChatTypes?: ChatType[]): void;
+    invokeCustomMethod(method: string, params?: any, callback?: (err: string | null, result?: any) => void): void;
+
+    onEvent(eventType: string, eventHandler: () => void): void;
+    offEvent(eventType: string, eventHandler: () => void): void;
+}
+
+export interface WebAppInitData {
+    query_id?: string;
+    user?: WebAppUser;
+    receiver?: WebAppUser;
+    chat?: WebAppChat;
+    chat_type?: string;
+    chat_instance?: string;
+    start_param?: string;
+    can_send_after?: number;
+    auth_date?: number;
+    hash?: string;
+}
+
+export interface WebAppUser {
+    id: number;
+    is_bot?: boolean;
+    first_name: string;
+    last_name?: string;
+    username?: string;
+    language_code?: string;
+    is_premium?: boolean;
+    photo_url?: string;
+}
+
+export interface WebAppChat {
+    id: number;
+    type: string;
+    title: string;
+    username?: string;
+    photo_url?: string;
+}
+
+export interface ThemeParams {
+    bg_color: string;
+    text_color: string;
+    hint_color: string;
+    link_color: string;
+    button_color: string;
+    button_text_color: string;
+    secondary_bg_color: string;
+    header_bg_color: string;
+    accent_text_color: string;
+    section_bg_color: string;
+    section_header_text_color: string;
+    subtitle_text_color: string;
+    destructive_text_color: string;
+}
+
+export interface MainButton {
+    text: string;
+    color: string;
+    textColor: string;
+    isVisible: boolean;
+    isActive: boolean;
+    isProgressVisible: boolean;
+    hasShineEffect: boolean;
+
+    setText(text: string): MainButton;
+    onClick(callback: () => void): MainButton;
+    offClick(callback: () => void): MainButton;
+    show(): MainButton;
+    hide(): MainButton;
+    enable(): MainButton;
+    disable(): MainButton;
+    showProgress(leaveActive?: boolean): MainButton;
+    hideProgress(): MainButton;
+    setParams(params: MainButtonParams): MainButton;
+}
+
+export interface MainButtonParams {
+    text?: string;
+    color?: string;
+    text_color?: string;
+    has_shine_effect?: boolean;
+    is_active?: boolean;
+    is_visible?: boolean;
+}
+
+export interface SecondaryButton extends MainButton {
+    position: 'left' | 'right' | 'top' | 'bottom';
+}
+
+export interface BackButton {
+    isVisible: boolean;
+
+    onClick(callback: () => void): BackButton;
+    offClick(callback: () => void): BackButton;
+    show(): BackButton;
+    hide(): BackButton;
+}
+
+export interface SettingsButton {
+    isVisible: boolean;
+
+    onClick(callback: () => void): SettingsButton;
+    offClick(callback: () => void): SettingsButton;
+    show(): SettingsButton;
+    hide(): SettingsButton;
+}
+
+export interface HapticFeedback {
+    impactOccurred(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft'): void;
+    notificationOccurred(type: 'error' | 'success' | 'warning'): void;
+    selectionChanged(): void;
+}
+
+export interface CloudStorage {
+    setItem(key: string, value: string, callback?: (err: Error | null, stored?: boolean) => void): void;
+    getItem(key: string, callback?: (err: Error | null, value?: string) => void): void;
+    getItems(keys: string[], callback?: (err: Error | null, values?: Record<string, string>) => void): void;
+    removeItem(key: string, callback?: (err: Error | null, removed?: boolean) => void): void;
+    removeItems(keys: string[], callback?: (err: Error | null, removed?: boolean) => void): void;
+    getKeys(callback?: (err: Error | null, keys?: string[]) => void): void;
+}
+
+export interface BiometricManager {
+    isInited: boolean;
+    isBiometricAvailable: boolean;
+    biometricType: 'finger' | 'face' | 'unknown';
+    isAccessRequested: boolean;
+    isAccessGranted: boolean;
+    isBiometricTokenSaved: boolean;
+    deviceId: string;
+
+    init(callback?: () => void): void;
+    requestAccess(params: BiometricRequestAccessParams, callback?: (granted: boolean) => void): void;
+    authenticate(params: BiometricAuthenticateParams, callback?: (success: boolean, token?: string) => void): void;
+    updateBiometricToken(token: string, callback?: (updated: boolean) => void): void;
+    openSettings(): void;
+}
+
+export interface BiometricRequestAccessParams {
+    reason?: string;
+}
+
+export interface BiometricAuthenticateParams {
+    reason?: string;
+}
+
+export interface Accelerometer {
+    isStarted: boolean;
+    x: number;
+    y: number;
+    z: number;
+
+    start(params?: { refresh_rate?: number }): void;
+    stop(): void;
+}
+
+export interface DeviceOrientation {
+    isStarted: boolean;
+    absolute: boolean;
+    alpha: number;
+    beta: number;
+    gamma: number;
+
+    start(params?: { refresh_rate?: number; need_absolute?: boolean }): void;
+    stop(): void;
+}
+
+export interface Gyroscope {
+    isStarted: boolean;
+    x: number;
+    y: number;
+    z: number;
+
+    start(params?: { refresh_rate?: number }): void;
+    stop(): void;
+}
+
+export interface LocationManager {
+    isInited: boolean;
+    isLocationAvailable: boolean;
+    isAccessRequested: boolean;
+    isAccessGranted: boolean;
+
+    init(callback?: () => void): void;
+    getLocation(callback?: (location: LocationData | null) => void): void;
+    openSettings(): void;
+}
+
+export interface LocationData {
+    latitude: number;
+    longitude: number;
+    altitude?: number;
+    course?: number;
+    speed?: number;
+    horizontal_accuracy?: number;
+    vertical_accuracy?: number;
+    course_accuracy?: number;
+    speed_accuracy?: number;
+}
+
+export interface ShareStoryParams {
+    text?: string;
+    widget_link?: {
+        url: string;
+        name?: string;
+    };
+}
+
+export interface DownloadFileParams {
+    url: string;
+    file_name: string;
+}
+
+export interface OpenLinkOptions {
+    try_browser?: 'google-chrome' | 'chrome' | 'firefox' | 'safari' | 'opera';
+    try_instant_view?: boolean;
+}
+
+export interface PopupParams {
+    title?: string;
+    message: string;
+    buttons?: PopupButton[];
+}
+
+export interface PopupButton {
+    id?: string;
+    type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive';
+    text?: string;
+}
+
+export interface ScanQrPopupParams {
+    text?: string;
+}
+
+export interface EmojiStatusParams {
+    duration?: number;
+}
+
+export type ChatType = 'users' | 'bots' | 'groups' | 'channels';
+
+declare global {
+    interface Window {
+        Telegram?: {
+            WebApp: TelegramWebApp;
+        };
+    }
+}
+
+
+/utils/telegram.ts
+
+// utils/telegram.ts
+export function validateInitData(initData: string, botToken: string): boolean {
+    // This should be done on your backend
+    // Example implementation for reference only
+    const urlParams = new URLSearchParams(initData)
+    const hash = urlParams.get('hash')
+    urlParams.delete('hash')
+
+    // Sort parameters
+    const params = Array.from(urlParams.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, value]) => `${key}=${value}`)
+        .join('\n')
+
+    // In production, verify hash on backend with bot token
+    return true // Placeholder
+}
+
+export function formatTelegramDate(timestamp: number): string {
+    return new Date(timestamp * 1000).toLocaleString()
+}
+
+export function isDesktop(platform: string): boolean {
+    return ['macos', 'windows', 'linux'].includes(platform.toLowerCase())
+}
+
+export function isMobile(platform: string): boolean {
+    return ['ios', 'android'].includes(platform.toLowerCase())
+}
+
+

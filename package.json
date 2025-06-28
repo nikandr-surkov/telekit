@@ -6,19 +6,32 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "consolidate:ts": "tsx ./scripts/consolidate-code.ts"
   },
   "dependencies": {
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "@vercel/analytics": "^1.5.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.19.2",
+    "lucide-react": "^0.525.0",
+    "lz-string": "^1.5.0",
+    "next": "15.3.4",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.13",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.4"
+    "react-syntax-highlighter": "^15.6.1",
+    "react-use": "^17.6.0",
+    "sonner": "^2.0.5",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

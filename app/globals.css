@@ -1,26 +1,92 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --telegram-blue: #0088cc;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Support Telegram's theme variables */
+.light {
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.dark {
+  color-scheme: dark;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--tg-theme-secondary-bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--tg-theme-hint-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tg-theme-text-color);
+}
+
+/* Button styles */
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95;
+    background-color: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95;
+    background-color: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Animations */
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Prevent text selection in game UI */
+.game-ui {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Safe area handling */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
