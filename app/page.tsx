@@ -14,10 +14,14 @@ import BiometricsDemo from '@/components/demos/BiometricsDemo'
 import GameFeaturesDemo from '@/components/demos/GameFeaturesDemo'
 import PaymentsDemo from '@/components/demos/PaymentsDemo'
 import ActivityDemo from '@/components/demos/ActivityDemo'
-import DataCommDemo from '@/components/demos/DataCommDemo'
 import EmojiStatusDemo from '@/components/demos/EmojiStatusDemo'
 import FileOperationsDemo from '@/components/demos/FileOperationsDemo'
 import InitDataDemo from '@/components/demos/InitDataDemo'
+import LinksDemo from '@/components/demos/LinksDemo'
+import PopupsDemo from '@/components/demos/PopupsDemo'
+import ShareStoryDemo from '@/components/demos/ShareStoryDemo'
+import HomeScreenDemo from '@/components/demos/HomeScreenDemo'
+import QRScannerDemo from '@/components/demos/QRScannerDemo'
 
 export default function Home() {
   const { isReady, user } = useTelegram()
@@ -70,10 +74,14 @@ export default function Home() {
           {activeTab === 'biometrics' && <BiometricsDemo />}
           {activeTab === 'game' && <GameFeaturesDemo />}
           {activeTab === 'payments' && <PaymentsDemo />}
-          {activeTab === 'data' && <DataCommDemo />}
           {activeTab === 'emoji' && <EmojiStatusDemo />}
           {activeTab === 'files' && <FileOperationsDemo />}
           {activeTab === 'activity' && <ActivityDemo />}
+          {activeTab === 'links' && <LinksDemo />}
+          {activeTab === 'popups' && <PopupsDemo />}
+          {activeTab === 'qr' && <QRScannerDemo />}
+          {activeTab === 'share' && <ShareStoryDemo />}
+          {activeTab === 'homescreen' && <HomeScreenDemo />}
         </motion.div>
       </div>
     </main>

@@ -5,14 +5,12 @@ import { useState, useEffect } from 'react'
 import { useTelegram } from '@/providers/TelegramProvider'
 import DemoSection from '@/components/DemoSection'
 import CodeBlock from '@/components/CodeBlock'
-import type { LocationData } from '@/types/telegram'
 
 export default function GameFeaturesDemo() {
     const { webApp } = useTelegram()
     const [isFullscreen, setIsFullscreen] = useState(false)
     const [isOrientationLocked, setIsOrientationLocked] = useState(false)
-    const [locationData, setLocationData] = useState<LocationData | null>(null)
-    const [homeScreenStatus, setHomeScreenStatus] = useState<string>('')
+    const [swipesEnabled, setSwipesEnabled] = useState(true)
 
     useEffect(() => {
         if (!webApp) return
@@ -50,56 +48,11 @@ export default function GameFeaturesDemo() {
     const toggleSwipes = () => {
         if (webApp?.isVerticalSwipesEnabled) {
             webApp?.disableVerticalSwipes()
+            setSwipesEnabled(false)
         } else {
             webApp?.enableVerticalSwipes()
+            setSwipesEnabled(true)
         }
-    }
-
-    const getLocation = () => {
-        webApp?.LocationManager.getLocation((location: LocationData | null) => {
-            if (location) {
-                setLocationData(location)
-                webApp.HapticFeedback.notificationOccurred('success')
-            } else {
-                webApp.showAlert('Location access denied')
-            }
-        })
-    }
-
-    const checkHomeScreen = () => {
-        webApp?.checkHomeScreenStatus((status: string) => {
-            setHomeScreenStatus(status)
-        })
-    }
-
-    const showQRScanner = () => {
-        webApp?.showScanQrPopup(
-            { text: 'Scan QR code to unlock bonus level' },
-            (text: string) => {
-                webApp.showAlert(`Scanned: ${text}`)
-                return true
-            }
-        )
-    }
-
-    const showGamePopup = () => {
-        webApp?.showPopup({
-            title: 'Game Over!',
-            message: 'You scored 1,234 points! What would you like to do?',
-            buttons: [
-                { id: 'restart', type: 'default', text: 'Play Again' },
-                { id: 'share', type: 'default', text: 'Share Score' },
-                { type: 'cancel', text: 'Exit' }
-            ]
-        }, (buttonId: string | null) => {
-            if (buttonId === 'restart') {
-                webApp.showAlert('Restarting game...')
-            } else if (buttonId === 'share') {
-                webApp.shareToStory('https://example.com/score.jpg', {
-                    text: 'I just scored 1,234 points! Can you beat my score?'
-                })
-            }
-        })
     }
 
     return (
@@ -115,7 +68,8 @@ export default function GameFeaturesDemo() {
                     </button>
 
                     <button onClick={toggleSwipes} className="btn-primary w-full">
-                        {webApp?.isVerticalSwipesEnabled ? 'Disable' : 'Enable'} Vertical Swipes
+                        {swipesEnabled ? 'Disable' : 'Enable'} Vertical Swipes
+                        {!swipesEnabled && ' (Good for games!)'}
                     </button>
                 </div>
 
@@ -133,86 +87,6 @@ webApp.lockOrientation()
 
 // Disable swipes for game controls
 webApp.disableVerticalSwipes()`}
-                </CodeBlock>
-            </DemoSection>
-
-            <DemoSection title="📍 Location Features">
-                <div className="space-y-4">
-                    <button onClick={getLocation} className="btn-primary w-full">
-                        Get Location
-                    </button>
-
-                    {locationData && (
-                        <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded text-sm">
-                            <div>Lat: {locationData.latitude.toFixed(6)}</div>
-                            <div>Lng: {locationData.longitude.toFixed(6)}</div>
-                            {locationData.altitude && <div>Alt: {locationData.altitude.toFixed(2)}m</div>}
-                            {locationData.speed && <div>Speed: {locationData.speed.toFixed(2)}m/s</div>}
-                        </div>
-                    )}
-                </div>
-
-                <CodeBlock language="typescript">
-                    {`// Location-based gaming
-webApp.LocationManager.init()
-
-webApp.LocationManager.getLocation((location) => {
-  if (location) {
-    // Use for AR games, geocaching, etc
-    spawnNearbyItems(
-      location.latitude,
-      location.longitude
-    )
-  }
-})`}
-                </CodeBlock>
-            </DemoSection>
-
-            <DemoSection title="📱 App Features">
-                <div className="space-y-4">
-                    <button onClick={() => webApp?.addToHomeScreen()} className="btn-primary w-full">
-                        Add to Home Screen
-                    </button>
-
-                    <button onClick={checkHomeScreen} className="btn-primary w-full">
-                        Check Home Screen Status
-                    </button>
-
-                    {homeScreenStatus && (
-                        <p className="text-sm text-center">Status: {homeScreenStatus}</p>
-                    )}
-
-                    <button onClick={showQRScanner} className="btn-primary w-full">
-                        Open QR Scanner
-                    </button>
-
-                    <button onClick={showGamePopup} className="btn-primary w-full">
-                        Show Game Popup
-                    </button>
-                </div>
-
-                <CodeBlock language="typescript">
-                    {`// Add to home screen for quick access
-webApp.addToHomeScreen()
-
-// QR code for bonus content
-webApp.showScanQrPopup({
-  text: 'Scan to unlock bonus'
-}, (qrText) => {
-  unlockBonus(qrText)
-  return true
-})
-
-// Game popups
-webApp.showPopup({
-  title: 'Level Complete!',
-  message: 'You earned 3 stars!',
-  buttons: [
-    { id: 'next', text: 'Next Level' },
-    { id: 'replay', text: 'Replay' },
-    { type: 'cancel' }
-  ]
-}, handleGameAction)`}
                 </CodeBlock>
             </DemoSection>
 
