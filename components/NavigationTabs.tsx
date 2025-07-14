@@ -1,4 +1,14 @@
 // components/NavigationTabs.tsx
+
+/**
+ * Telegram Dev Kit - Copyright (c) 2025 Nikandr Surkov
+ * 
+ * Proprietary License - This code may ONLY be used if purchased from https://nikandr.com
+ * Redistribution, reselling, or public publishing is strictly prohibited.
+ * 
+ * Full license and contact: https://nikandr.com
+ */
+
 import { motion } from 'framer-motion'
 
 interface Tab {
@@ -8,6 +18,7 @@ interface Tab {
 }
 
 const tabs: Tab[] = [
+    { id: 'about', label: 'About', icon: '👤' },
     { id: 'init', label: 'Init Data', icon: '🔐' },
     { id: 'core', label: 'Core API', icon: '🔧' },
     { id: 'buttons', label: 'Buttons', icon: '🔘' },

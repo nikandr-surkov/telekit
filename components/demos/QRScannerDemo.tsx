@@ -1,4 +1,14 @@
 // components/demos/QRScannerDemo.tsx
+
+/**
+ * Telegram Dev Kit - Copyright (c) 2025 Nikandr Surkov
+ * 
+ * Proprietary License - This code may ONLY be used if purchased from https://nikandr.com
+ * Redistribution, reselling, or public publishing is strictly prohibited.
+ * 
+ * Full license and contact: https://nikandr.com
+ */
+
 'use client'
 
 import { useState } from 'react'
@@ -471,12 +481,12 @@ webApp.showScanQrPopup({
                         <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
                             <div className="bg-white p-2 rounded mb-2">
                                 <QRCode
-                                    value="https://telegram.org"
+                                    value="https://nikandr.com"
                                     size={100}
                                     style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                                 />
                             </div>
-                            <div className="text-xs font-mono text-center">telegram.org</div>
+                            <div className="text-xs font-mono text-center">nikandr.com</div>
                             <div className="text-xs text-[var(--tg-theme-hint-color)] text-center">URL</div>
                         </div>
 
@@ -522,12 +532,12 @@ webApp.showScanQrPopup({
                         <div className="p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded">
                             <div className="bg-white p-2 rounded mb-2">
                                 <QRCode
-                                    value="https://t.me/durov"
+                                    value="https://t.me/NikandrApps"
                                     size={100}
                                     style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                                 />
                             </div>
-                            <div className="text-xs font-mono text-center">@durov</div>
+                            <div className="text-xs font-mono text-center">@NikandrApps</div>
                             <div className="text-xs text-[var(--tg-theme-hint-color)] text-center">Telegram Link</div>
                         </div>
                     </div>

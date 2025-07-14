@@ -1,4 +1,14 @@
 // components/demos/ShareStoryDemo.tsx
+
+/**
+ * Telegram Dev Kit - Copyright (c) 2025 Nikandr Surkov
+ * 
+ * Proprietary License - This code may ONLY be used if purchased from https://nikandr.com
+ * Redistribution, reselling, or public publishing is strictly prohibited.
+ * 
+ * Full license and contact: https://nikandr.com
+ */
+
 'use client'
 
 import { useState } from 'react'
@@ -10,7 +20,7 @@ export default function ShareStoryDemo() {
     const { webApp } = useTelegram()
     const [customUrl, setCustomUrl] = useState('https://telegra.ph/file/5583ac37c90979f052b7b.png')
     const [storyText, setStoryText] = useState('Check out my achievement! 🎮')
-    const [widgetUrl, setWidgetUrl] = useState('https://t.me/yourgamebot')
+    const [widgetUrl, setWidgetUrl] = useState('https://t.me/nikandrsurkov_bot')
     const [widgetName, setWidgetName] = useState('Play Game')
 
     const sharePresets = [
@@ -18,19 +28,19 @@ export default function ShareStoryDemo() {
             title: 'Game Score',
             image: 'https://telegra.ph/file/5583ac37c90979f052b7b.png',
             text: '🎮 I just scored 10,000 points!',
-            widget: { url: 'https://t.me/yourgamebot', name: 'Beat my score!' }
+            widget: { url: 'https://t.me/nikandrsurkov_bot', name: 'Beat my score!' }
         },
         {
             title: 'Achievement',
             image: 'https://telegra.ph/file/5583ac37c90979f052b7b.png',
             text: '🏆 Level 100 Completed!',
-            widget: { url: 'https://t.me/yourgamebot', name: 'Play Now' }
+            widget: { url: 'https://t.me/nikandrsurkov_bot', name: 'Play Now' }
         },
         {
             title: 'Video Moment',
             video: 'https://telegra.ph/file/61f1dac694c3131a7b4ac.mp4',
             text: '🎬 Epic gameplay moment!',
-            widget: { url: 'https://t.me/yourgamebot', name: 'Watch More' }
+            widget: { url: 'https://t.me/nikandrsurkov_bot', name: 'Watch More' }
         }
     ]
 
@@ -64,7 +74,7 @@ export default function ShareStoryDemo() {
             {
                 text: '🎥 Amazing gameplay footage!',
                 widget_link: {
-                    url: 'https://t.me/yourgamebot',
+                    url: 'https://t.me/nikandrsurkov_bot',
                     name: 'Watch Full Video'
                 }
             }

@@ -1,4 +1,14 @@
 // app/layout.tsx
+
+/**
+ * Telegram Dev Kit - Copyright (c) 2025 Nikandr Surkov
+ * 
+ * Proprietary License - This code may ONLY be used if purchased from https://nikandr.com
+ * Redistribution, reselling, or public publishing is strictly prohibited.
+ * 
+ * Full license and contact: https://nikandr.com
+ */
+
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
@@ -9,8 +19,8 @@ import { Analytics } from '@vercel/analytics/react'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Telegram Mini App Masterclass',
-  description: 'Learn to build amazing Telegram Mini App games',
+  title: 'Telegram Dev Kit by Nikandr Surkov',
+  description: 'Interactive playground showcasing all Telegram Mini App capabilities',
   formatDetection: { telephone: false },
   robots: 'noindex,nofollow',
 }

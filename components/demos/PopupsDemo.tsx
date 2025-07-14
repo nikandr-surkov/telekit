@@ -1,4 +1,14 @@
 // components/demos/PopupsDemo.tsx
+
+/**
+ * Telegram Dev Kit - Copyright (c) 2025 Nikandr Surkov
+ * 
+ * Proprietary License - This code may ONLY be used if purchased from https://nikandr.com
+ * Redistribution, reselling, or public publishing is strictly prohibited.
+ * 
+ * Full license and contact: https://nikandr.com
+ */
+
 'use client'
 
 import { useState } from 'react'
@@ -118,11 +128,11 @@ export default function PopupsDemo() {
                             } catch (e) {
                                 console.error('Inline query error:', e)
                                 // Fallback to URL sharing
-                                webApp?.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent('https://t.me/yourbotname')}&text=${encodeURIComponent('I just scored 1,234 points! Can you beat me?')}`)
+                                webApp?.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent('https://t.me/nikandrsurkov_bot')}&text=${encodeURIComponent('I just scored 1,234 points! Can you beat me?')}`)
                             }
                         } else {
                             // Direct fallback to URL sharing
-                            webApp?.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent('https://t.me/yourbotname')}&text=${encodeURIComponent('I just scored 1,234 points! Can you beat me?')}`)
+                            webApp?.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent('https://t.me/nikandrsurkov_bot')}&text=${encodeURIComponent('I just scored 1,234 points! Can you beat me?')}`)
                         }
                         break
                     default:
@@ -274,7 +284,7 @@ export default function PopupsDemo() {
                     }
                 } else if (buttonId === 'share') {
                     // Alternative sharing via URL
-                    webApp?.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent('https://t.me/yourbotname')}&text=${encodeURIComponent('Check out this awesome Mini App!')}`)
+                    webApp?.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent('https://t.me/nikandrsurkov_bot')}&text=${encodeURIComponent('Check out this awesome Mini App!')}`)
                 }
             }, 100)
         })
@@ -395,7 +405,7 @@ setTimeout(() => {
                         <div className="space-y-2">
                             <button
                                 onClick={() => {
-                                    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent('https://t.me/yourbotname')}&text=${encodeURIComponent('Check out my score: 1000 points! 🎮')}`
+                                    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent('https://t.me/nikandrsurkov_bot')}&text=${encodeURIComponent('Check out my score: 1000 points! 🎮')}`
                                     webApp?.openTelegramLink(shareUrl)
                                 }}
                                 className="btn-secondary w-full text-sm"
@@ -510,7 +520,7 @@ function shareScore(score) {
                     <button
                         onClick={() => {
                             const shareText = 'Join me in this awesome game!'
-                            const botUrl = 'https://t.me/yourbotname'
+                            const botUrl = 'https://t.me/nikandrsurkov_bot'
                             webApp?.openTelegramLink(
                                 `https://t.me/share/url?url=${encodeURIComponent(botUrl)}&text=${encodeURIComponent(shareText)}`
                             )

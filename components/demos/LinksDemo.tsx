@@ -1,4 +1,14 @@
 // components/demos/LinksDemo.tsx
+
+/**
+ * Telegram Dev Kit - Copyright (c) 2025 Nikandr Surkov
+ * 
+ * Proprietary License - This code may ONLY be used if purchased from https://nikandr.com
+ * Redistribution, reselling, or public publishing is strictly prohibited.
+ * 
+ * Full license and contact: https://nikandr.com
+ */
+
 'use client'
 
 import { useTelegram } from '@/providers/TelegramProvider'
@@ -12,31 +22,31 @@ export default function LinksDemo() {
         {
             title: 'Regular Link',
             description: 'Opens inside webview',
-            action: () => window.location.href = 'https://telegram.org',
-            code: `window.location.href = 'https://telegram.org'`
+            action: () => window.location.href = 'https://nikandr.com',
+            code: `window.location.href = 'https://nikandr.com'`
         },
         {
             title: 'External Link (target="_blank")',
             description: 'Opens outside webview',
             action: () => {
                 const a = document.createElement('a')
-                a.href = 'https://telegram.org'
+                a.href = 'https://nikandr.com'
                 a.target = '_blank'
                 a.click()
             },
-            code: `<a href="https://telegram.org" target="_blank">Open</a>`
+            code: `<a href="https://nikandr.com" target="_blank">Open</a>`
         },
         {
             title: 'window.open() Link',
             description: 'Opens in external browser',
-            action: () => window.open('https://telegram.org'),
-            code: `window.open('https://telegram.org')`
+            action: () => window.open('https://nikandr.com'),
+            code: `window.open('https://nikandr.com')`
         },
         {
             title: 'Telegram Link (t.me)',
             description: 'Opens inside Telegram app',
-            action: () => webApp?.openTelegramLink('https://t.me/telegram'),
-            code: `webApp.openTelegramLink('https://t.me/telegram')`
+            action: () => webApp?.openTelegramLink('https://t.me/NikandrApps'),
+            code: `webApp.openTelegramLink('https://t.me/NikandrApps')`
         },
         {
             title: 'Instant View Link',
@@ -53,14 +63,14 @@ export default function LinksDemo() {
         {
             title: 'Channel Link',
             description: 'Opens Telegram channel',
-            action: () => webApp?.openTelegramLink('https://t.me/telegram'),
-            code: `webApp.openTelegramLink('https://t.me/channelname')`
+            action: () => webApp?.openTelegramLink('https://t.me/NikandrApps'),
+            code: `webApp.openTelegramLink('https://t.me/NikandrApps')`
         },
         {
             title: 'Sticker Pack',
             description: 'Add sticker pack',
-            action: () => webApp?.openTelegramLink('https://t.me/addstickers/fltmp'),
-            code: `webApp.openTelegramLink('https://t.me/addstickers/packname')`
+            action: () => webApp?.openTelegramLink('https://t.me/addstickers/pumped_up'),
+            code: `webApp.openTelegramLink('https://t.me/addstickers/pumped_up')`
         },
         {
             title: 'Share URL',
@@ -114,7 +124,7 @@ export default function LinksDemo() {
                         {browserOptions.map((browser) => (
                             <button
                                 key={browser.value}
-                                onClick={() => webApp?.openLink('https://telegram.org', { try_browser: browser.value })}
+                                onClick={() => webApp?.openLink('https://nikandr.com', { try_browser: browser.value })}
                                 className="btn-secondary"
                             >
                                 Open in {browser.name}

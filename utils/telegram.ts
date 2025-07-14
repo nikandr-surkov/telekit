@@ -1,4 +1,14 @@
 // utils/telegram.ts
+
+/**
+ * Telegram Dev Kit - Copyright (c) 2025 Nikandr Surkov
+ * 
+ * Proprietary License - This code may ONLY be used if purchased from https://nikandr.com
+ * Redistribution, reselling, or public publishing is strictly prohibited.
+ * 
+ * Full license and contact: https://nikandr.com
+ */
+
 export function validateInitData(initData: string, botToken: string): boolean {
     // This should be done on your backend
     // Example implementation for reference only
