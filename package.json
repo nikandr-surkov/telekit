@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "consolidate:ts": "tsx ./scripts/consolidate-code.ts"
+    "lint": "next lint"
   },
   "dependencies": {
     "@telegram-apps/init-data-node": "^2.0.10",
