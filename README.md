@@ -1,7 +1,7 @@
 # 🚀 Telegram Mini App Dev Kit
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js 15" />
+  <img src="https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js" alt="Next.js 16" />
   <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript" alt="TypeScript" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react" alt="React 19" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS" />
@@ -47,7 +47,7 @@ Whether you're building a **Telegram bot**, a **Web3 dApp on TON**, a **clicker 
 
 ### 🔧 Developer Experience
 
-- **Next.js 15 App Router** — latest React Server Components architecture
+- **Next.js 16 App Router** — latest React Server Components architecture
 - **Full TypeScript** — complete type definitions for the entire Telegram WebApp API
 - **Tailwind CSS 4** — utility-first styling with Telegram theme integration
 - **Zustand** state management — lightweight, scalable global state
@@ -250,7 +250,7 @@ After deploying, update your bot's Menu Button URL in BotFather to your producti
 
 ### Other Platforms
 
-This is a standard Next.js 15 app — deploy anywhere that supports Node.js:
+This is a standard Next.js 16 app — deploy anywhere that supports Node.js:
 
 - **Railway** — `railway up`
 - **Render** — connect GitHub repo
@@ -264,7 +264,7 @@ This is a standard Next.js 15 app — deploy anywhere that supports Node.js:
 
 | Technology | Purpose |
 |------------|---------|
-| [Next.js 15](https://nextjs.org) | React framework with App Router |
+| [Next.js 16](https://nextjs.org) | React framework with App Router |
 | [React 19](https://react.dev) | UI library |
 | [TypeScript 5](https://typescriptlang.org) | Type safety |
 | [Tailwind CSS 4](https://tailwindcss.com) | Utility-first CSS |
